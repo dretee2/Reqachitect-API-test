@@ -4,7 +4,7 @@
 		"name": "Authentication",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "27529247",
-		"_collection_link": "https://interstellar-spaceship-717495.postman.co/workspace/Reqachitect~37c660b3-7c59-465b-acaf-1844f7d0b404/collection/27529247-5cc3c568-e21f-40f8-bfcd-f8769aaa189c?action=share&source=collection_link&creator=27529247"
+		"_collection_link": "https://interstellar-spaceship-717495.postman.co/workspace/37c660b3-7c59-465b-acaf-1844f7d0b404/collection/27529247-5cc3c568-e21f-40f8-bfcd-f8769aaa189c?action=share&source=collection_link&creator=27529247"
 	},
 	"item": [
 		{
@@ -1167,6 +1167,10 @@
 		},
 		{
 			"key": "user_phone",
+			"value": ""
+		},
+		{
+			"key": "Base_Platform_Url",
 			"value": ""
 		}
 	]
