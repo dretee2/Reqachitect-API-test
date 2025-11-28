@@ -177,7 +177,7 @@
 							"// --------------------------------------\r",
 							"negativeCases.forEach((testCase) => {\r",
 							"    pm.sendRequest({\r",
-							"        url: pm.environment.get(\"Base_Platform_Url\") + \"/auth/signup\",\r",
+							"        url: pm.environment.get(\"Base_Platform_Uri\") + \"/auth/signup\",\r",
 							"        method: \"POST\",\r",
 							"        header: { \"Content-Type\": \"application/json\" },\r",
 							"        body: { mode: \"raw\", raw: JSON.stringify(testCase) }\r",
@@ -224,9 +224,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{Base_Platform_Url}}/auth/signup",
+					"raw": "{{Base_Platform_Uri}}/auth/signup",
 					"host": [
-						"{{Base_Platform_Url}}"
+						"{{Base_Platform_Uri}}"
 					],
 					"path": [
 						"auth",
@@ -325,7 +325,7 @@
 							"    pm.collectionVariables.set(\"login_bruteforce_counter\", loginAttempts);\r",
 							"\r",
 							"    pm.sendRequest({\r",
-							"        url: pm.environment.get(\"Base_Platform_Url\") + \"/auth/login\",\r",
+							"        url: pm.environment.get(\"Base_Platform_Uri\") + \"/auth/login\",\r",
 							"        method: \"POST\",\r",
 							"        header: { \"Content-Type\": \"application/json\" },\r",
 							"        body: { \r",
@@ -389,9 +389,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{Base_Platform_Url}}/auth/signin",
+					"raw": "{{Base_Platform_Uri}}/auth/signin",
 					"host": [
-						"{{Base_Platform_Url}}"
+						"{{Base_Platform_Uri}}"
 					],
 					"path": [
 						"auth",
@@ -429,7 +429,7 @@
 							"// ---------- 2. Second email verification request (same user / access token) ----------\r",
 							"\r",
 							"pm.sendRequest({\r",
-							"    url: pm.environment.get(\"Base_Platform_Url\") + \"/auth/email-verification\",\r",
+							"    url: pm.environment.get(\"Base_Platform_Uri\") + \"/auth/email-verification\",\r",
 							"    method: \"POST\",\r",
 							"    header: {\r",
 							"        \"Content-Type\": \"application/json\",\r",
@@ -487,9 +487,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{Base_Platform_Url}}/auth/email-verification",
+					"raw": "{{Base_Platform_Uri}}/auth/email-verification",
 					"host": [
-						"{{Base_Platform_Url}}"
+						"{{Base_Platform_Uri}}"
 					],
 					"path": [
 						"auth",
@@ -551,7 +551,7 @@
 							"    pm.collectionVariables.set(\"email_ver_attempts\", attemptCount);\r",
 							"\r",
 							"    pm.sendRequest({\r",
-							"        url: pm.environment.get(\"base_url\") + \"/auth/email-verification/confirm\",\r",
+							"        url: pm.environment.get(\"Base_Platform_Uri\") + \"/auth/email-verification/confirm\",\r",
 							"        method: \"POST\",\r",
 							"        header: {\r",
 							"            \"Content-Type\": \"application/json\",\r",
@@ -631,9 +631,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{Base_Platform_Url}}/auth/email-verification/confirm",
+					"raw": "{{Base_Platform_Uri}}/auth/email-verification/confirm",
 					"host": [
-						"{{Base_Platform_Url}}"
+						"{{Base_Platform_Uri}}"
 					],
 					"path": [
 						"auth",
@@ -705,7 +705,7 @@
 							"    pm.collectionVariables.set(\"change_password_attempts\", attemptCount);\r",
 							"\r",
 							"    pm.sendRequest({\r",
-							"        url: pm.collectionVariables.get(\"Base_Platform_Url\") + \"/auth/change-password\",\r",
+							"        url: pm.collectionVariables.get(\"Base_Platform_Uri\") + \"/auth/change-password\",\r",
 							"        method: \"POST\",\r",
 							"        header: {\r",
 							"            \"Content-Type\": \"application/json\",\r",
@@ -786,9 +786,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{Base_Platform_Url}}/auth/change-password",
+					"raw": "{{Base_Platform_Uri}}/auth/change-password",
 					"host": [
-						"{{Base_Platform_Url}}"
+						"{{Base_Platform_Uri}}"
 					],
 					"path": [
 						"auth",
@@ -841,7 +841,7 @@
 							"negativeCases.forEach((testCase) => {\r",
 							"\r",
 							"    pm.sendRequest({\r",
-							"        url: pm.collectionVariables.get(\"base_url\") + \"/auth/forgot-password\",\r",
+							"        url: pm.collectionVariables.get(\"Base_Platform_Uri\") + \"/auth/forgot-password\",\r",
 							"        method: \"POST\",\r",
 							"        header: { \"Content-Type\": \"application/json\" },\r",
 							"        body: { mode: \"raw\", raw: JSON.stringify(testCase) }\r",
@@ -891,9 +891,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{Base_Platform_Url}}/auth/password-reset",
+					"raw": "{{Base_Platform_Uri}}/auth/password-reset",
 					"host": [
-						"{{Base_Platform_Url}}"
+						"{{Base_Platform_Uri}}"
 					],
 					"path": [
 						"auth",
@@ -917,7 +917,7 @@
 							"\r",
 							"positiveCases.forEach((testCase) => {\r",
 							"    pm.sendRequest({\r",
-							"        url: pm.collectionVariables.get(\"base_url\") + \"/auth/password-reset/confirm\",\r",
+							"        url: pm.collectionVariables.get(\"Base_Platform_Uri\") + \"/auth/password-reset/confirm\",\r",
 							"        method: \"POST\",\r",
 							"        header: {\"Content-Type\": \"application/json\"},\r",
 							"        body: { mode: \"raw\", raw: JSON.stringify(testCase) }\r",
@@ -1017,9 +1017,9 @@
 					"raw": "{\r\n  \"newPassword\": \"string\",\r\n  \"oldPassword\": \"string\"\r\n}"
 				},
 				"url": {
-					"raw": "{{Base_Platform_Url}}/auth/password-reset/confirm",
+					"raw": "{{Base_Platform_Uri}}/auth/password-reset/confirm",
 					"host": [
-						"{{Base_Platform_Url}}"
+						"{{Base_Platform_Uri}}"
 					],
 					"path": [
 						"auth",
@@ -1093,9 +1093,9 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "{{Base_Platform_Url}}/auth/logout",
+					"raw": "{{Base_Platform_Uri}}/auth/logout",
 					"host": [
-						"{{Base_Platform_Url}}"
+						"{{Base_Platform_Uri}}"
 					],
 					"path": [
 						"auth",
@@ -1170,7 +1170,7 @@
 			"value": ""
 		},
 		{
-			"key": "Base_Platform_Url",
+			"key": "Base_Platform_Uri",
 			"value": ""
 		}
 	]
