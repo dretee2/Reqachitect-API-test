@@ -177,7 +177,7 @@
 							"// --------------------------------------\r",
 							"negativeCases.forEach((testCase) => {\r",
 							"    pm.sendRequest({\r",
-							"        url: pm.environment.get(\"Base_Platform_Uri\") + \"/auth/signup\",\r",
+							"        url: pm.environment.get(\"https://platforms-staging.reqarchitect.com/api/v1/platform\") + \"/auth/signup\",\r",
 							"        method: \"POST\",\r",
 							"        header: { \"Content-Type\": \"application/json\" },\r",
 							"        body: { mode: \"raw\", raw: JSON.stringify(testCase) }\r",
@@ -224,11 +224,17 @@
 					}
 				},
 				"url": {
-					"raw": "{{Base_Platform_Uri}}/auth/signup",
+					"raw": "https://platforms-staging.reqarchitect.com/api/v1/platform/auth/signup",
+					"protocol": "https",
 					"host": [
-						"{{Base_Platform_Uri}}"
+						"platforms-staging",
+						"reqarchitect",
+						"com"
 					],
 					"path": [
+						"api",
+						"v1",
+						"platform",
 						"auth",
 						"signup"
 					]
