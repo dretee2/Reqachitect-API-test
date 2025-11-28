@@ -21,4 +21,4 @@ jobs:
 
       - name: Run API tests
         run: |
-          postman collection run "27529247-5cc3c568-e21f-40f8-bfcd-f8769aaa189c" --reporters cli,json,junit --reporter-json-export results/postman-api-test-results.json --reporter-junit-export results/postman-api-test-results.xml
+          postman collection run "27529247-96c80e44-a023-4871-850f-d7bd56efa9f5" --reporters cli,json,junit --reporter-json-export results/postman-api-test-results.json --reporter-junit-export results/postman-api-test-results.xml

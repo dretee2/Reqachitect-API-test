@@ -1,0 +1,395 @@
+{
+	"info": {
+		"_postman_id": "96c80e44-a023-4871-850f-d7bd56efa9f5",
+		"name": "Authentication Copy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27529247",
+		"_collection_link": "https://interstellar-spaceship-717495.postman.co/workspace/37c660b3-7c59-465b-acaf-1844f7d0b404/collection/27529247-96c80e44-a023-4871-850f-d7bd56efa9f5?action=share&source=collection_link&creator=27529247"
+	},
+	"item": [
+		{
+			"name": "Sign up",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// -------------------------------\r",
+							"// 1. Multinational first names\r",
+							"// -------------------------------\r",
+							"const firstNames = [\r",
+							"    \"Aisha\", \"James\", \"Wei\", \"Maria\", \"Hiroshi\", \"Anita\", \"John\", \"Fatima\",\r",
+							"    \"Santiago\", \"Chen\", \"Elena\", \"Kwame\", \"Samuel\", \"Linda\", \"Yusuf\", \"Tariq\",\r",
+							"    \"Grace\", \"Ahmed\", \"Priya\", \"Nina\", \"Omar\", \"Helena\", \"Victor\", \"Lars\"\r",
+							"];\r",
+							"\r",
+							"// -------------------------------\r",
+							"// 2. Multinational last names\r",
+							"// -------------------------------\r",
+							"const lastNames = [\r",
+							"    \"Okafor\", \"Chen\", \"Hernandez\", \"Smith\", \"Tanaka\", \"Singh\", \"Oluwole\",\r",
+							"    \"Garcia\", \"Kim\", \"Khan\", \"Petrov\", \"Diallo\", \"Andersson\", \"Martins\",\r",
+							"    \"Santos\", \"Adams\", \"Nakamura\", \"Ali\", \"Haddad\", \"Johansson\", \"Lopez\"\r",
+							"];\r",
+							"\r",
+							"// ---------------------------------\r",
+							"// 3. Random name selection\r",
+							"// ---------------------------------\r",
+							"let first = firstNames[Math.floor(Math.random() * firstNames.length)];\r",
+							"let last = lastNames[Math.floor(Math.random() * lastNames.length)];\r",
+							"let fullName = `${first} ${last}`;\r",
+							"\r",
+							"// ---------------------------------\r",
+							"// 4. Generate Unique Email\r",
+							"// ---------------------------------\r",
+							"let randomNum = Math.floor(Math.random() * 90000) + 10000;\r",
+							"let email = `${first.toLowerCase()}${randomNum}@mailinator.com`;\r",
+							"\r",
+							"// ---------------------------------\r",
+							"// 5. Dynamic Strong Password\r",
+							"// ---------------------------------\r",
+							"let password = `Qa${randomNum}#${Math.floor(Math.random() * 9999)}`;\r",
+							"\r",
+							"// ---------------------------------\r",
+							"// 6. Nigerian Phone Number\r",
+							"// ---------------------------------\r",
+							"const prefixes = [\"080\", \"081\", \"090\", \"070\"];\r",
+							"let prefix = prefixes[Math.floor(Math.random() * prefixes.length)];\r",
+							"let phone = prefix + Math.floor(10000000 + Math.random() * 89999999);\r",
+							"\r",
+							"// ---------------------------------\r",
+							"// 7. Save as Collection Variables\r",
+							"// ---------------------------------\r",
+							"pm.collectionVariables.set(\"signup_name\", fullName);\r",
+							"pm.globals.set(\"signup_email\", email);\r",
+							"pm.globals.set(\"signup_password\", password);\r",
+							"pm.collectionVariables.set(\"signup_phone\", phone);\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// ---------- 1. Parse main sign-up response ----------\r",
+							"let response = pm.response.json();\r",
+							"\r",
+							"// ---------- 2. Positive Sign-up Validations ----------\r",
+							"pm.test(\"Sign-up success - status 201\", function () {\r",
+							"    pm.expect(pm.response.code).to.eql(201);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Time to sign-up should be less than 2000ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.below(2000);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Email returned matches input\", function () {\r",
+							"    pm.expect(response.email).to.eql(pm.collectionVariables.get(\"signup_email\"));\r",
+							"});\r",
+							"\r",
+							"\r",
+							"// Save user ID if returned\r",
+							"if (response.id) {\r",
+							"    pm.collectionVariables.set(\"signup_id\", response.user.id);\r",
+							"}\r",
+							"\r",
+							"// Save the access token for the verification process of the  user \r",
+							"if (response.access_token){\r",
+							"    pm.collectionVariables.set(\"access_token\", response.access_token);\r",
+							"}\r",
+							"\r",
+							"\r",
+							"// ---------- 3. Validate user object ----------\r",
+							"let user = response.user;\r",
+							"\r",
+							"// Completed onboarding should be false for first login\r",
+							"pm.test(\"Completed Onboarding should be false\", function () {\r",
+							"    pm.expect(user.completedOnboarding).to.eql(false);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"// EmailVerified should be \"False\" for a new user\r",
+							"pm.test(\"Email should be verified\", function () {\r",
+							"    pm.expect(user.emailVerified).to.eql(\"False\");\r",
+							"});\r",
+							"\r",
+							"\r",
+							"// Validate user fields against signup collection variables\r",
+							"pm.test(\"User fields should match signup values\", function () {\r",
+							"    pm.expect(user.email).to.eql(pm.globals.get(\"signup_email\"));\r",
+							"    pm.expect(user.name).to.eql(pm.collectionVariables.get(\"signup_name\"));\r",
+							"    pm.expect(user.phone).to.eql(pm.collectionVariables.get(\"signup_phone\"));\r",
+							"   // pm.expect(user.createdAt).to.eql(pm.collectionVariables.get(\"signup_createdAt\"));\r",
+							"});\r",
+							"\r",
+							"\r",
+							"// NEGATIVE TESTS\r",
+							"// --------------------------------------\r",
+							"// 1. Default Negative Test Dataset (Cleaned + Labeled)\r",
+							"// --------------------------------------\r",
+							"let fallbackNegativeCases = [\r",
+							"    // Invalid emails\r",
+							"    {\"label\": \"Invalid email - missing @\", \"email\": \"invalidemail\", \"name\": \"Femi Otedola\", \"password\": \"Test@1234\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Invalid email - bad domain\", \"email\": \"user@.com\", \"name\": \"Femi Otedola\", \"password\": \"Test@1234\", \"phone\": \"08012345678\"},\r",
+							"\r",
+							"    // Missing fields\r",
+							"    {\"label\": \"Missing email\", \"email\": \"\", \"name\": \"Femi Otedola\", \"password\": \"Test@1234\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Missing name\", \"email\": \"test@mailinator.com\", \"name\": \"\", \"password\": \"Test@1234\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Missing password\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Missing phone\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"Test@1234\", \"phone\": \"\"},\r",
+							"\r",
+							"    // Weak passwords\r",
+							"    {\"label\": \"Weak password - too short\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"short\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Weak password - no uppercase\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"nouppercase1@\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Weak password - no lowercase\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"NOLOWERCASE1@\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Weak password - no number\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"NoNumber@\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Weak password - no special char\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"NoSpecial123\", \"phone\": \"08012345678\"},\r",
+							"\r",
+							"    // Invalid phone numbers\r",
+							"    {\"label\": \"Invalid phone - too short\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"Test@1234\", \"phone\": \"08012\"},\r",
+							"    {\"label\": \"Invalid phone - too long\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"Test@1234\", \"phone\": \"080123456789\"}\r",
+							"];\r",
+							"\r",
+							"// --------------------------------------\r",
+							"// 2. Load custom dataset if exists\r",
+							"// --------------------------------------\r",
+							"let negativeCases;\r",
+							"\r",
+							"try {\r",
+							"    let raw = pm.collectionVariables.get(\"negative_signup_cases\");\r",
+							"    if (raw) {\r",
+							"        negativeCases = JSON.parse(raw);\r",
+							"    } else {\r",
+							"        negativeCases = fallbackNegativeCases;\r",
+							"    }\r",
+							"} catch (e) {\r",
+							"    console.log(\"Invalid negative signup JSON — fallback used.\");\r",
+							"    negativeCases = fallbackNegativeCases;\r",
+							"}\r",
+							"\r",
+							"// --------------------------------------\r",
+							"// 3. Execute negative test calls\r",
+							"// --------------------------------------\r",
+							"negativeCases.forEach((testCase) => {\r",
+							"    pm.sendRequest({\r",
+							"        url: pm.environment.get(\"https://platforms-staging.reqarchitect.com/api/v1/platform\") + \"/auth/signup\",\r",
+							"        method: \"POST\",\r",
+							"        header: { \"Content-Type\": \"application/json\" },\r",
+							"        body: { mode: \"raw\", raw: JSON.stringify(testCase) }\r",
+							"    }, (err, res) => {\r",
+							"\r",
+							"        if (!err) {\r",
+							"\r",
+							"            pm.test(`NEGATIVE (${testCase.label}) ⇒ Status must be 400 or 422`, () => {\r",
+							"                pm.expect(res.code).to.be.oneOf([400, 422]);\r",
+							"            });\r",
+							"\r",
+							"            pm.test(`NEGATIVE (${testCase.label}) ⇒ Response under 3s`, () => {\r",
+							"                pm.expect(res.responseTime).to.be.below(3000);\r",
+							"            });\r",
+							"\r",
+							"            pm.test(`NEGATIVE (${testCase.label}) ⇒ Should return an error message`, () => {\r",
+							"                let body = {};\r",
+							"                try { body = res.json(); } catch (e) {}\r",
+							"\r",
+							"                pm.expect(body).to.be.an(\"object\");\r",
+							"                pm.expect(body).to.have.any.keys(\"error\", \"message\", \"details\"); // I do not have the error message for these guys. Once I have this I will make the change to account for this. This will dynamically rendered from the list.\r",
+							"            });\r",
+							"        }\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"{{signup_email}}\",\r\n  \"name\": \"{{signup_name}}\",\r\n  \"password\": \"{{signup_password}}\",\r\n  \"phone\": \"{{signup_phone}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://platforms-staging.reqarchitect.com/api/v1/platform/auth/signup",
+					"protocol": "https",
+					"host": [
+						"platforms-staging",
+						"reqarchitect",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"platform",
+						"auth",
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Logout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// ==========================\r",
+							"// 2. Unset COLLECTION VARS\r",
+							"// ==========================\r",
+							"let collectionVarsToUnset = [\r",
+							"    \"access_token\",\r",
+							"    \"refresh_token\",\r",
+							"    \"password_reset_attempts\",\r",
+							"    \"signup_name\",\r",
+							"    \"signup_password\",\r",
+							"    \"signup_phone\",\r",
+							"    \"login_bruteforce_attempts\",\r",
+							"    \"signup_id\",\r",
+							"    \"email_ver_attempts\",\r",
+							"    \"change_password_attempts\",\r",
+							"    \"user_id\",\r",
+							"    \"login_bruteforce_counter\"\r",
+							"\r",
+							"];\r",
+							"\r",
+							"collectionVarsToUnset.forEach(v => pm.collectionVariables.unset(v));\r",
+							"\r",
+							"\r",
+							"// ==========================\r",
+							"// 3. Unset GLOBAL VARS\r",
+							"// ==========================\r",
+							"let globalVarsToUnset = [\r",
+							"    \"signup_email\",\r",
+							"    \"signup_password\"\r",
+							"];\r",
+							"\r",
+							"globalVarsToUnset.forEach(v => pm.globals.unset(v));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://platforms-staging.reqarchitect.com/api/v1/platform/auth/logout",
+					"protocol": "https",
+					"host": [
+						"platforms-staging",
+						"reqarchitect",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"platform",
+						"auth",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					"// ==========================\r",
+					"// 2. Unset COLLECTION VARS\r",
+					"// ==========================\r",
+					"let collectionVarsToUnset = [\r",
+					"    \"access_token\",\r",
+					"    \"refresh_token\",\r",
+					"    \"password_reset_attempts\",\r",
+					"    \"signup_name\",\r",
+					"    \"signup_password\",\r",
+					"    \"signup_phone\",\r",
+					"    \"login_bruteforce_attempts\",\r",
+					"    \"signup_id\",\r",
+					"    \"email_ver_attempts\",\r",
+					"    \"change_password_attempts\",\r",
+					"    \"user_id\",\r",
+					"    \"login_bruteforce_counter\"\r",
+					"\r",
+					"];\r",
+					"\r",
+					"collectionVarsToUnset.forEach(v => pm.collectionVariables.unset(v));\r",
+					"\r",
+					"\r",
+					"// ==========================\r",
+					"// 3. Unset GLOBAL VARS\r",
+					"// ==========================\r",
+					"let globalVarsToUnset = [\r",
+					"    \"signup_email\",\r",
+					"    \"signup_password\"\r",
+					"];\r",
+					"\r",
+					"globalVarsToUnset.forEach(v => pm.globals.unset(v));"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "user_name",
+			"value": ""
+		},
+		{
+			"key": "user_phone",
+			"value": ""
+		},
+		{
+			"key": "Base_Platform_Uri",
+			"value": ""
+		}
+	]
+}
