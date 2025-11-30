@@ -1,0 +1,1210 @@
+{
+	"info": {
+		"_postman_id": "8bd338f9-b7d2-4adb-b7ca-8ebe6b6ea0cb",
+		"name": "Authentication",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27529247",
+		"_collection_link": "https://interstellar-spaceship-717495.postman.co/workspace/Reqachitect-API-Test~622fb6ed-6ca0-45a2-abc0-745b1014d8f9/collection/27529247-8bd338f9-b7d2-4adb-b7ca-8ebe6b6ea0cb?action=share&source=collection_link&creator=27529247"
+	},
+	"item": [
+		{
+			"name": "Sign up",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// -------------------------------\r",
+							"// 1. Multinational first names\r",
+							"// -------------------------------\r",
+							"const firstNames = [\r",
+							"    \"Aisha\", \"James\", \"Wei\", \"Maria\", \"Hiroshi\", \"Anita\", \"John\", \"Fatima\",\r",
+							"    \"Santiago\", \"Chen\", \"Elena\", \"Kwame\", \"Samuel\", \"Linda\", \"Yusuf\", \"Tariq\",\r",
+							"    \"Grace\", \"Ahmed\", \"Priya\", \"Nina\", \"Omar\", \"Helena\", \"Victor\", \"Lars\"\r",
+							"];\r",
+							"\r",
+							"// -------------------------------\r",
+							"// 2. Multinational last names\r",
+							"// -------------------------------\r",
+							"const lastNames = [\r",
+							"    \"Okafor\", \"Chen\", \"Hernandez\", \"Smith\", \"Tanaka\", \"Singh\", \"Oluwole\",\r",
+							"    \"Garcia\", \"Kim\", \"Khan\", \"Petrov\", \"Diallo\", \"Andersson\", \"Martins\",\r",
+							"    \"Santos\", \"Adams\", \"Nakamura\", \"Ali\", \"Haddad\", \"Johansson\", \"Lopez\"\r",
+							"];\r",
+							"\r",
+							"// ---------------------------------\r",
+							"// 3. Random name selection\r",
+							"// ---------------------------------\r",
+							"let first = firstNames[Math.floor(Math.random() * firstNames.length)];\r",
+							"let last = lastNames[Math.floor(Math.random() * lastNames.length)];\r",
+							"let fullName = `${first} ${last}`;\r",
+							"\r",
+							"// ---------------------------------\r",
+							"// 4. Generate Unique Email\r",
+							"// ---------------------------------\r",
+							"let randomNum = Math.floor(Math.random() * 90000) + 10000;\r",
+							"let email = `${first.toLowerCase()}${randomNum}@mailinator.com`;\r",
+							"\r",
+							"// ---------------------------------\r",
+							"// 5. Dynamic Strong Password\r",
+							"// ---------------------------------\r",
+							"let password = `Qa${randomNum}#${Math.floor(Math.random() * 9999)}`;\r",
+							"\r",
+							"// ---------------------------------\r",
+							"// 6. Nigerian Phone Number\r",
+							"// ---------------------------------\r",
+							"const prefixes = [\"080\", \"081\", \"090\", \"070\"];\r",
+							"let prefix = prefixes[Math.floor(Math.random() * prefixes.length)];\r",
+							"let phone = prefix + Math.floor(10000000 + Math.random() * 89999999);\r",
+							"\r",
+							"// ---------------------------------\r",
+							"// 7. Save as Collection Variables\r",
+							"// ---------------------------------\r",
+							"pm.collectionVariables.set(\"signup_name\", fullName);\r",
+							"pm.globals.set(\"signup_email\", email);\r",
+							"pm.globals.set(\"signup_password\", password);\r",
+							"pm.collectionVariables.set(\"signup_phone\", phone);\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// ---------- 1. Parse main sign-up response ----------\r",
+							"let response = pm.response.json();\r",
+							"\r",
+							"// ---------- 2. Positive Sign-up Validations ----------\r",
+							"pm.test(\"Sign-up success - status 201\", function () {\r",
+							"    pm.expect(pm.response.code).to.eql(201);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Time to sign-up should be less than 2000ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.below(2000);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Email returned matches input\", function () {\r",
+							"    pm.expect(response.email).to.eql(pm.collectionVariables.get(\"signup_email\"));\r",
+							"});\r",
+							"\r",
+							"\r",
+							"// Save user ID if returned\r",
+							"if (response.id) {\r",
+							"    pm.collectionVariables.set(\"signup_id\", response.user.id);\r",
+							"}\r",
+							"\r",
+							"// Save the access token for the verification process of the  user \r",
+							"if (response.access_token){\r",
+							"    pm.collectionVariables.set(\"access_token\", response.access_token);\r",
+							"}\r",
+							"\r",
+							"\r",
+							"// ---------- 3. Validate user object ----------\r",
+							"let user = response.user;\r",
+							"\r",
+							"// Completed onboarding should be false for first login\r",
+							"pm.test(\"Completed Onboarding should be false\", function () {\r",
+							"    pm.expect(user.completedOnboarding).to.eql(false);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"// EmailVerified should be \"False\" for a new user\r",
+							"pm.test(\"Email should be verified\", function () {\r",
+							"    pm.expect(user.emailVerified).to.eql(\"False\");\r",
+							"});\r",
+							"\r",
+							"\r",
+							"// Validate user fields against signup collection variables\r",
+							"pm.test(\"User fields should match signup values\", function () {\r",
+							"    pm.expect(user.email).to.eql(pm.globals.get(\"signup_email\"));\r",
+							"    pm.expect(user.name).to.eql(pm.collectionVariables.get(\"signup_name\"));\r",
+							"    pm.expect(user.phone).to.eql(pm.collectionVariables.get(\"signup_phone\"));\r",
+							"   // pm.expect(user.createdAt).to.eql(pm.collectionVariables.get(\"signup_createdAt\"));\r",
+							"});\r",
+							"\r",
+							"\r",
+							"// NEGATIVE TESTS\r",
+							"// --------------------------------------\r",
+							"// 1. Default Negative Test Dataset (Cleaned + Labeled)\r",
+							"// --------------------------------------\r",
+							"let fallbackNegativeCases = [\r",
+							"    // Invalid emails\r",
+							"    {\"label\": \"Invalid email - missing @\", \"email\": \"invalidemail\", \"name\": \"Femi Otedola\", \"password\": \"Test@1234\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Invalid email - bad domain\", \"email\": \"user@.com\", \"name\": \"Femi Otedola\", \"password\": \"Test@1234\", \"phone\": \"08012345678\"},\r",
+							"\r",
+							"    // Missing fields\r",
+							"    {\"label\": \"Missing email\", \"email\": \"\", \"name\": \"Femi Otedola\", \"password\": \"Test@1234\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Missing name\", \"email\": \"test@mailinator.com\", \"name\": \"\", \"password\": \"Test@1234\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Missing password\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Missing phone\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"Test@1234\", \"phone\": \"\"},\r",
+							"\r",
+							"    // Weak passwords\r",
+							"    {\"label\": \"Weak password - too short\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"short\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Weak password - no uppercase\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"nouppercase1@\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Weak password - no lowercase\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"NOLOWERCASE1@\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Weak password - no number\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"NoNumber@\", \"phone\": \"08012345678\"},\r",
+							"    {\"label\": \"Weak password - no special char\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"NoSpecial123\", \"phone\": \"08012345678\"},\r",
+							"\r",
+							"    // Invalid phone numbers\r",
+							"    {\"label\": \"Invalid phone - too short\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"Test@1234\", \"phone\": \"08012\"},\r",
+							"    {\"label\": \"Invalid phone - too long\", \"email\": \"test@mailinator.com\", \"name\": \"Femi\", \"password\": \"Test@1234\", \"phone\": \"080123456789\"}\r",
+							"];\r",
+							"\r",
+							"// --------------------------------------\r",
+							"// 2. Load custom dataset if exists\r",
+							"// --------------------------------------\r",
+							"let negativeCases;\r",
+							"\r",
+							"try {\r",
+							"    let raw = pm.collectionVariables.get(\"negative_signup_cases\");\r",
+							"    if (raw) {\r",
+							"        negativeCases = JSON.parse(raw);\r",
+							"    } else {\r",
+							"        negativeCases = fallbackNegativeCases;\r",
+							"    }\r",
+							"} catch (e) {\r",
+							"    console.log(\"Invalid negative signup JSON — fallback used.\");\r",
+							"    negativeCases = fallbackNegativeCases;\r",
+							"}\r",
+							"\r",
+							"// --------------------------------------\r",
+							"// 3. Execute negative test calls\r",
+							"// --------------------------------------\r",
+							"negativeCases.forEach((testCase) => {\r",
+							"    pm.sendRequest({\r",
+							"        url: pm.environment.get(\"Base_Platform_Url\") + \"reqarchitect.com/api/v1/platform/auth/signup\", \r",
+							"        method: \"POST\",\r",
+							"        header: { \"Content-Type\": \"application/json\" },\r",
+							"        body: { mode: \"raw\", raw: JSON.stringify(testCase) }\r",
+							"    }, (err, res) => {\r",
+							"\r",
+							"        if (!err) {\r",
+							"\r",
+							"            pm.test(`NEGATIVE (${testCase.label}) ⇒ Status must be 400 or 422`, () => {\r",
+							"                pm.expect(res.code).to.be.oneOf([400, 422]);\r",
+							"            });\r",
+							"\r",
+							"            pm.test(`NEGATIVE (${testCase.label}) ⇒ Response under 3s`, () => {\r",
+							"                pm.expect(res.responseTime).to.be.below(3000);\r",
+							"            });\r",
+							"\r",
+							"            pm.test(`NEGATIVE (${testCase.label}) ⇒ Should return an error message`, () => {\r",
+							"                let body = {};\r",
+							"                try { body = res.json(); } catch (e) {}\r",
+							"\r",
+							"                pm.expect(body).to.be.an(\"object\");\r",
+							"                pm.expect(body).to.have.any.keys(\"error\", \"message\", \"details\"); // I do not have the error message for these guys. Once I have this I will make the change to account for this. This will dynamically rendered from the list.\r",
+							"            });\r",
+							"        }\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"{{signup_email}}\",\r\n  \"name\": \"{{signup_name}}\",\r\n  \"password\": \"{{signup_password}}\",\r\n  \"phone\": \"{{signup_phone}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/signup",
+					"host": [
+						"{{Base_Platform_Url}}reqarchitect",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"platform",
+						"auth",
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// ---------- 1. Parse main login response ----------\r",
+							"let response = pm.response.json();\r",
+							"\r",
+							"// ---------- 2. Positive Login Validations ----------\r",
+							"pm.collectionVariables.set(\"access_token\", response.access_token);\r",
+							"pm.collectionVariables.set(\"refresh_token\", response.refresh_token);\r",
+							"\r",
+							"let user = response.user;\r",
+							"\r",
+							"pm.test(\"Completed Onboarding should be false\", function () {\r",
+							"    pm.expect(user.completedOnboarding).to.eql(false);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"All notifications should be true\", function () {\r",
+							"    pm.expect(user.enabledContactsNotifications).to.eql(true);\r",
+							"    pm.expect(user.enabledInboxNotifications).to.eql(true);\r",
+							"    pm.expect(user.enabledNewsletter).to.eql(true);\r",
+							"    pm.expect(user.enabledProductUpdates).to.eql(true);\r",
+							"    pm.expect(user.enabledWeeklySummary).to.eql(true);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Phone, Name, ID, CreatedAt, Email should match signup\", function () {\r",
+							"    pm.expect(user.phone).to.eql(pm.collectionVariables.get(\"signup_phone\"));\r",
+							"    pm.expect(user.name).to.eql(pm.collectionVariables.get(\"signup_name\"));\r",
+							"    pm.expect(user.id).to.eql(pm.collectionVariables.get(\"signup_id\"));\r",
+							"    //pm.expect(user.createdAt).to.eql(pm.collectionVariables.get(\"signup_createdAt\")); // revist this \r",
+							"    pm.expect(user.email).to.eql(pm.globals.get(\"signup_email\"));\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Last login should NOT be today\", function () {\r",
+							"    let lastLoginDate = new Date(user.lastLogin);\r",
+							"    let today = new Date();\r",
+							"    pm.expect(lastLoginDate.toDateString()).to.not.eql(today.toDateString());\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							"// ---------- 3. Automated Negative Test Cases ----------\r",
+							"// ========================================\r",
+							"// NEGATIVE LOGIN TESTS\r",
+							"// ========================================\r",
+							"\r",
+							"// Dynamic user from previous signup\r",
+							"const validEmail = pm.collectionVariables.get(\"signup_email\");\r",
+							"const validPassword = pm.collectionVariables.get(\"signup_password\");\r",
+							"\r",
+							"// Brute force counter\r",
+							"let loginAttempts = Number(pm.collectionVariables.get(\"login_bruteforce_counter\") || 0);\r",
+							"\r",
+							"// ========================================\r",
+							"// NEGATIVE TEST DATASET\r",
+							"// ========================================\r",
+							"let negativeCases = [\r",
+							"\r",
+							"    // -------- Missing fields --------\r",
+							"    { email: \"\", password: validPassword, scenario: \"Missing email\" },\r",
+							"    { email: validEmail, password: \"\", scenario: \"Missing password\" },\r",
+							"    { email: \"\", password: \"\", scenario: \"Both fields missing\" },\r",
+							"\r",
+							"    // -------- Wrong combinations --------\r",
+							"    { email: \"notexist\" + Math.random().toString(36).substring(5) + \"@mailinator.com\", password: validPassword, scenario: \"Wrong email, correct password\" },\r",
+							"    { email: validEmail, password: \"WrongPassword123@\", scenario: \"Correct email, wrong password\" },\r",
+							"    { email: \"random\" + Math.random().toString(36).substring(3) + \"@mailinator.com\", password: \"CompletelyWrong123!\", scenario: \"Wrong email & wrong password\" },\r",
+							"\r",
+							"    // -------- Additional variations --------\r",
+							"    { email: \"INVALIDFORMAT\", password: validPassword, scenario: \"Invalid email format\" },\r",
+							"    { email: validEmail, password: \"short\", scenario: \"Too short password\" },\r",
+							"    //{ email: validEmail.toUpperCase(), password: validPassword, scenario: \"Email case sensitivity check\" },\r",
+							"    { email: \"   \" + validEmail + \"   \", password: validPassword, scenario: \"Email with leading/trailing spaces\" }\r",
+							"];\r",
+							"\r",
+							"\r",
+							"// ========================================\r",
+							"// 1. EXECUTE EACH NEGATIVE LOGIN CASE\r",
+							"// ========================================\r",
+							"negativeCases.forEach((testCase) => {\r",
+							"\r",
+							"    loginAttempts++;\r",
+							"    pm.collectionVariables.set(\"login_bruteforce_counter\", loginAttempts);\r",
+							"\r",
+							"    pm.sendRequest({\r",
+							"        url: pm.environment.get(\"Base_Platform_Url\") + \"reqarchitect.com/api/v1/platform/auth/login\",\r",
+							"        method: \"POST\",\r",
+							"        header: { \"Content-Type\": \"application/json\" },\r",
+							"        body: { \r",
+							"            mode: \"raw\",\r",
+							"            raw: JSON.stringify({\r",
+							"                email: testCase.email,\r",
+							"                password: testCase.password\r",
+							"            })\r",
+							"        }\r",
+							"    }, (err, res) => {\r",
+							"\r",
+							"        if (err) {\r",
+							"            console.error(\"Login negative request failed:\", err);\r",
+							"            return;\r",
+							"        }\r",
+							"\r",
+							"        // =============================\r",
+							"        // 2. NEGATIVE TEST VALIDATION\r",
+							"        // =============================\r",
+							"        pm.test(`NEGATIVE LOGIN (${testCase.scenario}) - status should be 400/401`, function () {\r",
+							"            pm.expect(res.code).to.be.oneOf([400, 401]);\r",
+							"        });\r",
+							"\r",
+							"        pm.test(`NEGATIVE LOGIN (${testCase.scenario}) - response < 3s`, function () {\r",
+							"            pm.expect(res.responseTime).to.be.below(3000);\r",
+							"        });\r",
+							"\r",
+							"        pm.test(`NEGATIVE LOGIN (${testCase.scenario}) - Body must not reveal which field is wrong`, function () {\r",
+							"            let body;\r",
+							"            try { body = res.json(); } catch (e) { body = {}; }\r",
+							"\r",
+							"            // Expected only generic error messages\r",
+							"            pm.expect(body).to.have.any.keys(\"error\", \"message\", \"details\");\r",
+							"\r",
+							"            // Ensure the API doesn't reveal which field was wrong\r",
+							"            let combinedBody = JSON.stringify(body).toLowerCase();\r",
+							"            pm.expect(combinedBody).to.not.include(\"email\");\r",
+							"            pm.expect(combinedBody).to.not.include(\"password\");\r",
+							"        });\r",
+							"\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"{{signup_email}}\",\r\n  \"password\": \"{{signup_password}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/signin",
+					"host": [
+						"{{Base_Platform_Url}}reqarchitect",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"platform",
+						"auth",
+						"signin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Email Verification",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// ---------- 1. First email verification request ----------\r",
+							"\r",
+							"// Check that first response is 200 OK\r",
+							"pm.test(\"Email verification - status code 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.eql(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response time within limit\", function () {\r",
+							"            pm.expect(res.responseTime).to.be.below(3000);\r",
+							"        });\r",
+							"\r",
+							"// Check that the response has a message\r",
+							"pm.test(\"Email verification - response contains message\", function () {\r",
+							"    let response = pm.response.json();\r",
+							"    pm.expect(response).to.have.property(\"message\");\r",
+							"    pm.expect(response.message).to.be(\"Verification emails has been sent to you email\");\r",
+							"});\r",
+							"\r",
+							"// ---------- 2. Second email verification request (same user / access token) ----------\r",
+							"\r",
+							"pm.sendRequest({\r",
+							"    url: pm.environment.get(\"Base_Platform_Url\") + \"reqarchitect.com/api/v1/platform/auth/email-verification\",\r",
+							"    method: \"POST\",\r",
+							"    header: {\r",
+							"        \"Content-Type\": \"application/json\",\r",
+							"        \"Authorization\": \"Bearer \" + pm.collectionVariables.get(\"access_token\")\r",
+							"    }\r",
+							"\r",
+							"}, function (err, res) {\r",
+							"    if (err) {\r",
+							"        console.error(\"Second email verification request failed:\", err);\r",
+							"    } else {\r",
+							"        // ---------- 3. Negative / Already verified check ----------\r",
+							"        pm.test(\"Second email verification - status code 400\", function () {\r",
+							"            pm.expect(res.code).to.eql(400);\r",
+							"        });\r",
+							"\r",
+							"        pm.test(\"Second email verification - response body contains error details\", function () {\r",
+							"            let responseBody = res.json();\r",
+							"\r",
+							"            // Get the error message that will be used for this process \r",
+							"            pm.expect(responseBody).to.have.property(\"error\", \"Email already verisied\");\r",
+							"            pm.expect(responseBody).to.have.property(\"details\", \"Email Verification error\");\r",
+							"            pm.expect(responseBody).to.have.property(\"message\", \"Email already verisied\");\r",
+							"        });\r",
+							"\r",
+							"    }\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/email-verification",
+					"host": [
+						"{{Base_Platform_Url}}reqarchitect",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"platform",
+						"auth",
+						"email-verification"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verification",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// ---------- 1. Positive test: valid token ----------\r",
+							"let response = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Email confirm - status 200 for valid token\", function () {\r",
+							"    pm.expect(pm.response.code).to.eql(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Email confirm - success should be true\", function () {\r",
+							"    pm.expect(response.success).to.eql(true);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Email confirm - message should indicate verified\", function () {\r",
+							"    pm.expect(response.message.toLowerCase()).to.include(\"verified\");\r",
+							"});\r",
+							"\r",
+							"// ---------------------------\r",
+							"// 1. Negative Test Token Set\r",
+							"// ---------------------------\r",
+							"const negativeTokens = [\r",
+							"    \"\",                                 // Missing token\r",
+							"    null,                               // Null token\r",
+							"    \"   \",                              // Spaces only\r",
+							"    \"invalidtoken123\",                  // Random string\r",
+							"    \"expired_token_ABC123\",             // Simulate expired token\r",
+							"    \"wrong-format-###\",                 // Invalid token format\r",
+							"    \"short\",                            // Token too short\r",
+							"    \"toolongtokentoolongtokentoolong\",  // Token too long\r",
+							"    \"token_with_unicode_🔥\",            // Weird token\r",
+							"    \"SQLinjection' OR '1'='1\"           // Malicious token attempt\r",
+							"];\r",
+							"\r",
+							"// ---------------------------------------\r",
+							"// 2. Brute-force attempt counter\r",
+							"// ---------------------------------------\r",
+							"let attemptCount = Number(pm.collectionVariables.get(\"email_ver_attempts\") || 0);\r",
+							"\r",
+							"// ---------------------------------------\r",
+							"// 3. Loop through negative tokens\r",
+							"// ---------------------------------------\r",
+							"negativeTokens.forEach((token) => {\r",
+							"\r",
+							"    attemptCount++;\r",
+							"    pm.collectionVariables.set(\"email_ver_attempts\", attemptCount);\r",
+							"\r",
+							"    pm.sendRequest({\r",
+							"        url: pm.environment.get(\"Base_Platform_Uri\") + \"/auth/email-verification/confirm\",\r",
+							"        method: \"POST\",\r",
+							"        header: {\r",
+							"            \"Content-Type\": \"application/json\",\r",
+							"            \"Authorization\": \"Bearer \" + pm.collectionVariables.get(\"access_token\")\r",
+							"        },\r",
+							"        body: {\r",
+							"            mode: \"raw\",\r",
+							"            raw: JSON.stringify({ token: token })\r",
+							"        }\r",
+							"    }, function (err, res) {\r",
+							"\r",
+							"        if (err) {\r",
+							"            console.error(\"❌ Verification request error:\", err);\r",
+							"            return;\r",
+							"        }\r",
+							"\r",
+							"        // ---------------------------\r",
+							"        // 4. Basic response checks\r",
+							"        // ---------------------------\r",
+							"        pm.test(`Email verification → status code for token: \"${token}\"`, function () {\r",
+							"            pm.expect(res.code).to.be.oneOf([400, 401]);\r",
+							"        });\r",
+							"\r",
+							"        pm.test(`Email verification → response structure for token: \"${token}\"`, function () {\r",
+							"            let body = {};\r",
+							"            try { body = res.json(); } catch {}\r",
+							"            pm.expect(body).to.have.property(\"error\");\r",
+							"            pm.expect(body).to.have.property(\"message\");\r",
+							"        });\r",
+							"\r",
+							"        pm.test(`Email verification → response time < 3s for token: \"${token}\"`, function () {\r",
+							"            pm.expect(res.responseTime).to.be.below(3000);\r",
+							"        });\r",
+							"\r",
+							"        // ---------------------------\r",
+							"        // 5. Brute-force lock test\r",
+							"        // ---------------------------\r",
+							"        if (attemptCount > 4) {\r",
+							"            pm.test(\"Too many attempts → System should block further verification attempts\", function () {\r",
+							"                pm.expect(res.code).to.be.oneOf([429, 400, 401]); \r",
+							"            });\r",
+							"        } else {\r",
+							"            pm.test(\"Attempt count within safe limit\", function () {\r",
+							"                pm.expect(attemptCount).to.be.at.most(4);\r",
+							"            });\r",
+							"        }\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"token\": \"string\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/email-verification/confirm",
+					"host": [
+						"{{Base_Platform_Url}}reqarchitect",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"platform",
+						"auth",
+						"email-verification",
+						"confirm"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "change password",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response = pm.response.json();\r",
+							"\r",
+							"// ---------- Positive Test ----------\r",
+							"pm.test(\"Change Password - Status 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.eql(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Change Password - Success message\", function () {\r",
+							"    pm.expect(response).to.have.property(\"message\");\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"// -------------------------------------\r",
+							"// 1. Full Negative Test Case Definitions\r",
+							"// -------------------------------------\r",
+							"const oldPassword = pm.collectionVariables.get(\"signup_password\");\r",
+							"const negativeChangePasswordCases = [\r",
+							"    // Missing or empty fields\r",
+							"    { oldPassword: \"\", newPassword: \"NewPassword@123\", label: \"Missing old password\" },\r",
+							"    { oldPassword: \"Password123?\", newPassword: \"\", label: \"Missing new password\" },\r",
+							"    { oldPassword: \"\", newPassword: \"\", label: \"Both fields Missing\" },\r",
+							"\r",
+							"    // Wrong old password\r",
+							"    { oldPassword: \"WrongOldPass\", newPassword: \"NewPassword@123\", label: \"Wrong old password\"},\r",
+							"    { oldPassword: \"DoesNotMatchOld123!\", newPassword: \"ValidNewPass1!\", label: \"Wrong old password\"},\r",
+							"\r",
+							"    // Weak new password variations\r",
+							"    { oldPassword: \"TestPassword123!\", newPassword: \"short\", label: \"New password too short\" },              // Too short\r",
+							"    { oldPassword: \"TestPassword123!\", newPassword: \"nopuppercase1!\", label: \"New password with no uppercase\" },     // No uppercase\r",
+							"    { oldPassword: \"TestPassword123!\", newPassword: \"NOLOWERCASE1!\", label: \"New password with no lowercase\"}      // No lowercase\r",
+							"    { oldPassword: \"TestPassword123!\", newPassword: \"NoNumber!\", label: \"New password with no number\"},          // No number\r",
+							"    { oldPassword: \"TestPassword123!\", newPassword: \"NoSpecial123\", label: \"New password with no special character\" },       // No special character\r",
+							"    { oldPassword: \"TestPassword123!\", newPassword: \"short\" , label: \"New password too long\" },              // Too long\r",
+							"\r",
+							"    // Malicious payload attempts\r",
+							"    { oldPassword: \"TestPassword123!\", newPassword: \"password OR 1=1\", label: \"Malicious payload attempts => password OR 1=1\" },\r",
+							"    { oldPassword: \"TestPassword123!\", newPassword: \"<script>alert(1)</script>\", label: \"Malicious payload attempts => <script>alert(1)</script>\" },\r",
+							"    { oldPassword: \"TestPassword123!\", newPassword: \"🔥🔥🔥🔥🔥\", label: \"Malicious payload attempts => 🔥🔥🔥🔥🔥 \"}\r",
+							"];\r",
+							"\r",
+							"// ---------------------------------------\r",
+							"// 2. Brute Force Attempt Counter Handling\r",
+							"// ---------------------------------------\r",
+							"let attemptCount = Number(pm.collectionVariables.get(\"change_password_attempts\") || 0);\r",
+							"\r",
+							"// ---------------------------------------\r",
+							"// 3. Loop Through Each Negative Test Case\r",
+							"// ---------------------------------------\r",
+							"negativeChangePasswordCases.forEach((testCase) => {\r",
+							"    attemptCount++;\r",
+							"    pm.collectionVariables.set(\"change_password_attempts\", attemptCount);\r",
+							"\r",
+							"    pm.sendRequest({\r",
+							"        url: pm.collectionVariables.get(\"Base_Platform_Uri\") + \"/auth/change-password\",\r",
+							"        method: \"POST\",\r",
+							"        header: {\r",
+							"            \"Content-Type\": \"application/json\",\r",
+							"            \"Authorization\": \"Bearer \" + pm.collectionVariables.get(\"access_token\")\r",
+							"        },\r",
+							"        body: {\r",
+							"            mode: \"raw\",\r",
+							"            raw: JSON.stringify(testCase)\r",
+							"        }\r",
+							"    }, function (err, res) {\r",
+							"        if (err) {\r",
+							"            console.error(\"❌ Change-password request error:\", err);\r",
+							"            return;\r",
+							"        }\r",
+							"\r",
+							"        // ---------------------------------------\r",
+							"        // 4. Validation of Negative Test Response\r",
+							"        // ---------------------------------------\r",
+							"        pm.test(`(Change Password) → Status for payload: ${JSON.stringify(testCase.label)}`, function () {\r",
+							"            pm.expect(res.code).to.be.oneOf([400, 401]);\r",
+							"        });\r",
+							"\r",
+							"        pm.test(`Change Password → Response Structure: ${JSON.stringify(testCase.label)}`, function () {\r",
+							"            let body = {};\r",
+							"            try { body = res.json(); } catch {}\r",
+							"\r",
+							"            pm.expect(body).to.have.property(\"error\");\r",
+							"            pm.expect(body).to.have.property(\"message\");\r",
+							"            pm.expect(body).to.have.property(\"details\");\r",
+							"        });\r",
+							"\r",
+							"        pm.test(`Change Password → Response Time < 3s: ${JSON.stringify(testCase.label)`, function () {\r",
+							"            pm.expect(res.responseTime).to.be.below(3000);\r",
+							"        });\r",
+							"\r",
+							"        // ---------------------------------------\r",
+							"        // 5. Brute-force Lockout Simulation\r",
+							"        // ---------------------------------------\r",
+							"        if (attemptCount > 4) {\r",
+							"            pm.test(\"Too Many Change-Password Attempts!! Account should be blocked/locked\", function () {\r",
+							"                pm.expect(res.code).to.be.oneOf([429, 400, 401]);\r",
+							"            });\r",
+							"        } else {\r",
+							"            pm.test(\"Attempt count within safe range\", function () {\r",
+							"                pm.expect(attemptCount).to.be.at.most(4);\r",
+							"            });\r",
+							"        }\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"newPassword\": \"{{signup_password}}\",\r\n  \"oldPassword\": \"TestPassword123!\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/change-password",
+					"host": [
+						"{{Base_Platform_Url}}reqarchitect",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"platform",
+						"auth",
+						"change-password"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "reset password",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response = pm.response.json();\r",
+							"\r",
+							"// ---------- Positive Test ----------\r",
+							"pm.test(\"Forgot Password - Status 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.eql(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Forgot Password - message exists\", function () {\r",
+							"    pm.expect(response).to.have.property(\"message\");\r",
+							"});\r",
+							"\r",
+							"// ---------------------------\r",
+							"// 1. Default Negative Test Cases\r",
+							"// ---------------------------\r",
+							"let negativeCases = [\r",
+							"    { \"email\": \"wrongemail@example.com\" },  // Non-existent email\r",
+							"    { \"email\": \"\" },                        // Empty email\r",
+							"    {}                                      // Missing email field\r",
+							"];\r",
+							"\r",
+							"// ---------------------------\r",
+							"// 2. Optionally load from collection variable\r",
+							"// ---------------------------\r",
+							"try {\r",
+							"    const raw = pm.collectionVariables.get(\"negative_forgot_password_cases\");\r",
+							"    if (raw) negativeCases = JSON.parse(raw);\r",
+							"} catch (e) {\r",
+							"    console.error(\"Invalid JSON in negative_forgot_password_cases:\", e);\r",
+							"}\r",
+							"\r",
+							"// ---------------------------\r",
+							"// 3. Execute Negative Test Requests\r",
+							"// ---------------------------\r",
+							"negativeCases.forEach((testCase) => {\r",
+							"\r",
+							"    pm.sendRequest({\r",
+							"        url: pm.collectionVariables.get(\"Base_Platform_Uri\") + \"/auth/forgot-password\",\r",
+							"        method: \"POST\",\r",
+							"        header: { \"Content-Type\": \"application/json\" },\r",
+							"        body: { mode: \"raw\", raw: JSON.stringify(testCase) }\r",
+							"    }, function (err, res) {\r",
+							"        if (err) {\r",
+							"            console.error(\"Forgot Password request failed:\", err);\r",
+							"            return;\r",
+							"        }\r",
+							"\r",
+							"        // ---------- 4. Status Code Check ----------\r",
+							"        pm.test(`Forgot Password NEGATIVE → status 400 for payload: ${JSON.stringify(testCase)}`, function () {\r",
+							"            pm.expect(res.code).to.eql(400);\r",
+							"        });\r",
+							"\r",
+							"        // ---------- 5. Response Body Validation ----------\r",
+							"        pm.test(`Forgot Password NEGATIVE → response body must contain error and message`, function () {\r",
+							"            let body = {};\r",
+							"            try { body = res.json(); } catch {}\r",
+							"            pm.expect(body).to.have.property(\"error\");\r",
+							"            pm.expect(body).to.have.property(\"message\");\r",
+							"        });\r",
+							"\r",
+							"        // ---------- 6. Response Time Check ----------\r",
+							"        pm.test(`Forgot Password NEGATIVE → response time < 3000ms`, function () {\r",
+							"            pm.expect(res.responseTime).to.be.below(3000);\r",
+							"        });\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"{{signup_email}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/password-reset",
+					"host": [
+						"{{Base_Platform_Url}}reqarchitect",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"platform",
+						"auth",
+						"password-reset"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Reset Password Completion",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Positive payloads\r",
+							"let positiveCases = [\r",
+							"  { password: \"NewPassword@123\", token: \"validTokenFromForgotPassword\" }\r",
+							"];\r",
+							"\r",
+							"positiveCases.forEach((testCase) => {\r",
+							"    pm.sendRequest({\r",
+							"        url: pm.collectionVariables.get(\"Base_Platform_Uri\") + \"/auth/password-reset/confirm\",\r",
+							"        method: \"POST\",\r",
+							"        header: {\"Content-Type\": \"application/json\"},\r",
+							"        body: { mode: \"raw\", raw: JSON.stringify(testCase) }\r",
+							"    }, (err, res) => {\r",
+							"        if (!err) {\r",
+							"            pm.test(`Password Reset CONFIRM POSITIVE - Status 200 for token: ${testCase.token}`, function () {\r",
+							"                pm.expect(res.code).to.eql(200);\r",
+							"            });\r",
+							"\r",
+							"            pm.test(`Password Reset CONFIRM POSITIVE - Success message`, function () {\r",
+							"                let body = res.json();\r",
+							"                pm.expect(body).to.have.property(\"success\", true);\r",
+							"                pm.expect(body).to.have.property(\"message\");\r",
+							"            });\r",
+							"        }\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"/// ----------------------------------------------\r",
+							"// NEGATIVE PAYLOADS (from collection variable)\r",
+							"// ----------------------------------------------\r",
+							"let storedCases = pm.collectionVariables.get(\"negative_password_reset_cases\");\r",
+							"\r",
+							"let negativeCases = storedCases ? JSON.parse(storedCases) : [\r",
+							"    {\"password\": \"NewPassword@123\", \"token\": \"invalidToken123\"},\r",
+							"    {\"password\": \"NewPassword@123\", \"token\": \"expiredToken456\"},\r",
+							"    {\"password\": \"NewPassword@123\", \"token\": \"tokenFromOtherUser789\"},\r",
+							"    {\"password\": \"NewPassword@123\", \"token\": \"short\"},\r",
+							"    {\"password\": \"weakpass\", \"token\": \"validTokenFromForgotPassword\"},\r",
+							"    {\"password\": \"NoNumber!\", \"token\": \"validTokenFromForgotPassword\"},\r",
+							"    {\"password\": \"NoSpecial123\", \"token\": \"validTokenFromForgotPassword\"},\r",
+							"    {\"password\": \"\", \"token\": \"validTokenFromForgotPassword\"},\r",
+							"    {\"password\": \"NewPassword@123\", \"token\": \"\"},\r",
+							"    {\"token\": \"validTokenFromForgotPassword\"},\r",
+							"    {\"password\": \"weakpass\", \"token\": \"invalidToken123\"}\r",
+							"];\r",
+							"\r",
+							"// ----------------------------------------------\r",
+							"// ATTEMPT COUNTER\r",
+							"// ----------------------------------------------\r",
+							"let attemptCounter = Number(pm.collectionVariables.get(\"password_reset_attempts\") || 0);\r",
+							"\r",
+							"// ----------------------------------------------\r",
+							"// RUN NEGATIVE TESTS\r",
+							"// ----------------------------------------------\r",
+							"negativeCases.forEach((testCase) => {\r",
+							"    attemptCounter++;\r",
+							"    pm.collectionVariables.set(\"password_reset_attempts\", attemptCounter);\r",
+							"\r",
+							"    pm.sendRequest({\r",
+							"        url: pm.collectionVariables.get(\"base_url\") + \"/auth/password-reset/confirm\",\r",
+							"        method: \"POST\",\r",
+							"        header: {\"Content-Type\": \"application/json\"},\r",
+							"        body: { mode: \"raw\", raw: JSON.stringify(testCase) }\r",
+							"    }, (err, res) => {\r",
+							"\r",
+							"        if (!err) {\r",
+							"\r",
+							"            pm.test(`NEGATIVE - Should return 400 for token: ${testCase.token || \"missing token\"}`, function () {\r",
+							"                pm.expect(res.code).to.eql(400);\r",
+							"            });\r",
+							"\r",
+							"            pm.test(\"NEGATIVE - Response body contains error structure\", function () {\r",
+							"                let body = res.json();\r",
+							"                pm.expect(body).to.have.property(\"error\");\r",
+							"                pm.expect(body).to.have.property(\"message\");\r",
+							"            });\r",
+							"\r",
+							"            pm.test(\"NEGATIVE - Response time under 3000ms\", function () {\r",
+							"                pm.expect(res.responseTime).to.be.below(3000);\r",
+							"            });\r",
+							"\r",
+							"            // --------------------------------------------------\r",
+							"            // SECURITY ALERT AS A PM.TEST (NOT console.warn)\r",
+							"            // --------------------------------------------------\r",
+							"            if (attemptCounter > 4) {\r",
+							"                pm.test(\"SECURITY ALERT: More than 4 failed password-reset attempts detected!\", function () {\r",
+							"                    pm.expect(true).to.eql(true); // Always pass, only warn\r",
+							"                });\r",
+							"            }\r",
+							"        }\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"newPassword\": \"string\",\r\n  \"oldPassword\": \"string\"\r\n}"
+				},
+				"url": {
+					"raw": "https://{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/password-reset/confirm",
+					"protocol": "https",
+					"host": [
+						"{{Base_Platform_Url}}reqarchitect",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"platform",
+						"auth",
+						"password-reset",
+						"confirm"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Logout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// ==========================\r",
+							"// 2. Unset COLLECTION VARS\r",
+							"// ==========================\r",
+							"let collectionVarsToUnset = [\r",
+							"    \"access_token\",\r",
+							"    \"refresh_token\",\r",
+							"    \"password_reset_attempts\",\r",
+							"    \"signup_name\",\r",
+							"    \"signup_password\",\r",
+							"    \"signup_phone\",\r",
+							"    \"login_bruteforce_attempts\",\r",
+							"    \"signup_id\",\r",
+							"    \"email_ver_attempts\",\r",
+							"    \"change_password_attempts\",\r",
+							"    \"user_id\",\r",
+							"    \"login_bruteforce_counter\"\r",
+							"\r",
+							"];\r",
+							"\r",
+							"collectionVarsToUnset.forEach(v => pm.collectionVariables.unset(v));\r",
+							"\r",
+							"\r",
+							"// ==========================\r",
+							"// 3. Unset GLOBAL VARS\r",
+							"// ==========================\r",
+							"let globalVarsToUnset = [\r",
+							"    \"signup_email\",\r",
+							"    \"signup_password\"\r",
+							"];\r",
+							"\r",
+							"globalVarsToUnset.forEach(v => pm.globals.unset(v));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/logout",
+					"host": [
+						"{{Base_Platform_Url}}reqarchitect",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"platform",
+						"auth",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					"// ==========================\r",
+					"// 2. Unset COLLECTION VARS\r",
+					"// ==========================\r",
+					"let collectionVarsToUnset = [\r",
+					"    \"access_token\",\r",
+					"    \"refresh_token\",\r",
+					"    \"password_reset_attempts\",\r",
+					"    \"signup_name\",\r",
+					"    \"signup_password\",\r",
+					"    \"signup_phone\",\r",
+					"    \"login_bruteforce_attempts\",\r",
+					"    \"signup_id\",\r",
+					"    \"email_ver_attempts\",\r",
+					"    \"change_password_attempts\",\r",
+					"    \"user_id\",\r",
+					"    \"login_bruteforce_counter\"\r",
+					"\r",
+					"];\r",
+					"\r",
+					"collectionVarsToUnset.forEach(v => pm.collectionVariables.unset(v));\r",
+					"\r",
+					"\r",
+					"// ==========================\r",
+					"// 3. Unset GLOBAL VARS\r",
+					"// ==========================\r",
+					"let globalVarsToUnset = [\r",
+					"    \"signup_email\",\r",
+					"    \"signup_password\"\r",
+					"];\r",
+					"\r",
+					"globalVarsToUnset.forEach(v => pm.globals.unset(v));"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "user_name",
+			"value": ""
+		},
+		{
+			"key": "user_phone",
+			"value": ""
+		},
+		{
+			"key": "Base_Platform_Uri",
+			"value": ""
+		}
+	]
+}
