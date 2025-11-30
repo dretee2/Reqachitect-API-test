@@ -177,7 +177,7 @@
 							"// --------------------------------------\r",
 							"negativeCases.forEach((testCase) => {\r",
 							"    pm.sendRequest({\r",
-							"        url: pm.environment.get(\"Base_Platform_Url\") + \"reqarchitect.com/api/v1/platform/auth/signup\", \r",
+							"        url: \"https://platforms-staging.reqarchitect.com/api/v1/platform/auth/signup\", \r",
 							"        method: \"POST\",\r",
 							"        header: { \"Content-Type\": \"application/json\" },\r",
 							"        body: { mode: \"raw\", raw: JSON.stringify(testCase) }\r",
@@ -224,9 +224,11 @@
 					}
 				},
 				"url": {
-					"raw": "{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/signup",
+					"raw": "https://platforms-staging.reqarchitect.com/api/v1/platform/auth/signup",
+					"protocol": "https",
 					"host": [
-						"{{Base_Platform_Url}}reqarchitect",
+						"platforms-staging",
+						"reqarchitect",
 						"com"
 					],
 					"path": [
@@ -329,7 +331,7 @@
 							"    pm.collectionVariables.set(\"login_bruteforce_counter\", loginAttempts);\r",
 							"\r",
 							"    pm.sendRequest({\r",
-							"        url: pm.environment.get(\"Base_Platform_Url\") + \"reqarchitect.com/api/v1/platform/auth/login\",\r",
+							"        url: \"https://platforms-staging.reqarchitect.com/api/v1/platform/auth/signin\",\r",
 							"        method: \"POST\",\r",
 							"        header: { \"Content-Type\": \"application/json\" },\r",
 							"        body: { \r",
@@ -393,9 +395,11 @@
 					}
 				},
 				"url": {
-					"raw": "{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/signin",
+					"raw": "https://platforms-staging.reqarchitect.com/api/v1/platform/auth/signin",
+					"protocol": "https",
 					"host": [
-						"{{Base_Platform_Url}}reqarchitect",
+						"platforms-staging",
+						"reqarchitect",
 						"com"
 					],
 					"path": [
@@ -437,7 +441,7 @@
 							"// ---------- 2. Second email verification request (same user / access token) ----------\r",
 							"\r",
 							"pm.sendRequest({\r",
-							"    url: pm.environment.get(\"Base_Platform_Url\") + \"reqarchitect.com/api/v1/platform/auth/email-verification\",\r",
+							"    url: \"https://platforms-staging.reqarchitect.com/api/v1/platform/auth/email-verification\",\r",
 							"    method: \"POST\",\r",
 							"    header: {\r",
 							"        \"Content-Type\": \"application/json\",\r",
@@ -495,9 +499,11 @@
 					}
 				},
 				"url": {
-					"raw": "{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/email-verification",
+					"raw": "https://platforms-staging.reqarchitect.com/api/v1/platform/auth/email-verification",
+					"protocol": "https",
 					"host": [
-						"{{Base_Platform_Url}}reqarchitect",
+						"platforms-staging",
+						"reqarchitect",
 						"com"
 					],
 					"path": [
@@ -563,7 +569,7 @@
 							"    pm.collectionVariables.set(\"email_ver_attempts\", attemptCount);\r",
 							"\r",
 							"    pm.sendRequest({\r",
-							"        url: pm.environment.get(\"Base_Platform_Uri\") + \"/auth/email-verification/confirm\",\r",
+							"        url: \"https://platforms-staging.reqarchitect.com/api/v1/platform/auth/email-verification/confirm\",\r",
 							"        method: \"POST\",\r",
 							"        header: {\r",
 							"            \"Content-Type\": \"application/json\",\r",
@@ -643,9 +649,11 @@
 					}
 				},
 				"url": {
-					"raw": "{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/email-verification/confirm",
+					"raw": "https://platforms-staging.reqarchitect.com/api/v1/platform/auth/email-verification/confirm",
+					"protocol": "https",
 					"host": [
-						"{{Base_Platform_Url}}reqarchitect",
+						"platforms-staging",
+						"reqarchitect",
 						"com"
 					],
 					"path": [
@@ -721,7 +729,7 @@
 							"    pm.collectionVariables.set(\"change_password_attempts\", attemptCount);\r",
 							"\r",
 							"    pm.sendRequest({\r",
-							"        url: pm.collectionVariables.get(\"Base_Platform_Uri\") + \"/auth/change-password\",\r",
+							"        url: \"https://platforms-staging.reqarchitect.com/api/v1/platform/auth/change-password\",\r",
 							"        method: \"POST\",\r",
 							"        header: {\r",
 							"            \"Content-Type\": \"application/json\",\r",
@@ -802,9 +810,11 @@
 					}
 				},
 				"url": {
-					"raw": "{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/change-password",
+					"raw": "https://platforms-staging.reqarchitect.com/api/v1/platform/auth/change-password",
+					"protocol": "https",
 					"host": [
-						"{{Base_Platform_Url}}reqarchitect",
+						"platforms-staging",
+						"reqarchitect",
 						"com"
 					],
 					"path": [
@@ -861,7 +871,7 @@
 							"negativeCases.forEach((testCase) => {\r",
 							"\r",
 							"    pm.sendRequest({\r",
-							"        url: pm.collectionVariables.get(\"Base_Platform_Uri\") + \"/auth/forgot-password\",\r",
+							"        url: \"https://platforms-staging.reqarchitect.com/api/v1/platform/auth/password-reset\",\r",
 							"        method: \"POST\",\r",
 							"        header: { \"Content-Type\": \"application/json\" },\r",
 							"        body: { mode: \"raw\", raw: JSON.stringify(testCase) }\r",
@@ -911,9 +921,11 @@
 					}
 				},
 				"url": {
-					"raw": "{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/password-reset",
+					"raw": "https://platforms-staging.reqarchitect.com/api/v1/platform/auth/password-reset",
+					"protocol": "https",
 					"host": [
-						"{{Base_Platform_Url}}reqarchitect",
+						"platforms-staging",
+						"reqarchitect",
 						"com"
 					],
 					"path": [
@@ -941,7 +953,7 @@
 							"\r",
 							"positiveCases.forEach((testCase) => {\r",
 							"    pm.sendRequest({\r",
-							"        url: pm.collectionVariables.get(\"Base_Platform_Uri\") + \"/auth/password-reset/confirm\",\r",
+							"        url: \"https://platforms-staging.reqarchitect.com/api/v1/platform/auth/password-reset/confirm\",\r",
 							"        method: \"POST\",\r",
 							"        header: {\"Content-Type\": \"application/json\"},\r",
 							"        body: { mode: \"raw\", raw: JSON.stringify(testCase) }\r",
@@ -1041,10 +1053,11 @@
 					"raw": "{\r\n  \"newPassword\": \"string\",\r\n  \"oldPassword\": \"string\"\r\n}"
 				},
 				"url": {
-					"raw": "https://{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/password-reset/confirm",
+					"raw": "https://platforms-staging.reqarchitect.com/api/v1/platform/auth/password-reset/confirm",
 					"protocol": "https",
 					"host": [
-						"{{Base_Platform_Url}}reqarchitect",
+						"platforms-staging",
+						"reqarchitect",
 						"com"
 					],
 					"path": [
@@ -1122,9 +1135,11 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "{{Base_Platform_Url}}reqarchitect.com/api/v1/platform/auth/logout",
+					"raw": "https://platforms-staging.reqarchitect.com/api/v1/platform/auth/logout",
+					"protocol": "https",
 					"host": [
-						"{{Base_Platform_Url}}reqarchitect",
+						"platforms-staging",
+						"reqarchitect",
 						"com"
 					],
 					"path": [
