@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "96c80e44-a023-4871-850f-d7bd56efa9f5",
+		"_postman_id": "fb61630a-4f24-48c9-b83d-a6a41caa712f",
 		"name": "Authentication Copy",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "27529247",
-		"_collection_link": "https://interstellar-spaceship-717495.postman.co/workspace/37c660b3-7c59-465b-acaf-1844f7d0b404/collection/27529247-96c80e44-a023-4871-850f-d7bd56efa9f5?action=share&source=collection_link&creator=27529247"
+		"_collection_link": "https://interstellar-spaceship-717495.postman.co/workspace/Reqachitect-API-Test~622fb6ed-6ca0-45a2-abc0-745b1014d8f9/collection/27529247-fb61630a-4f24-48c9-b83d-a6a41caa712f?action=share&source=collection_link&creator=27529247"
 	},
 	"item": [
 		{
@@ -224,17 +224,11 @@
 					}
 				},
 				"url": {
-					"raw": "https://platforms-staging.reqarchitect.com/api/v1/platform/auth/signup",
-					"protocol": "https",
+					"raw": "{{Platform_Uri}}/auth/signup",
 					"host": [
-						"platforms-staging",
-						"reqarchitect",
-						"com"
+						"{{Platform_Uri}}"
 					],
 					"path": [
-						"api",
-						"v1",
-						"platform",
 						"auth",
 						"signup"
 					]
@@ -277,17 +271,11 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "https://platforms-staging.reqarchitect.com/api/v1/platform/auth/logout",
-					"protocol": "https",
+					"raw": "{{Platform_Uri}}/auth/logout",
 					"host": [
-						"platforms-staging",
-						"reqarchitect",
-						"com"
+						"{{Platform_Uri}}"
 					],
 					"path": [
-						"api",
-						"v1",
-						"platform",
 						"auth",
 						"logout"
 					]
@@ -360,7 +348,7 @@
 			"value": ""
 		},
 		{
-			"key": "Base_Platform_Uri",
+			"key": "Platform_Uri",
 			"value": ""
 		}
 	]
