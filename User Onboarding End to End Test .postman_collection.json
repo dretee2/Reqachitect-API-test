@@ -1,0 +1,2415 @@
+{
+	"info": {
+		"_postman_id": "1f83efab-801d-4849-af96-29877075aaca",
+		"name": "e2e User Onboarding Copy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27529247",
+		"_collection_link": "https://interstellar-spaceship-717495.postman.co/workspace/Reqachitect-API-Test~622fb6ed-6ca0-45a2-abc0-745b1014d8f9/collection/27529247-1f83efab-801d-4849-af96-29877075aaca?action=share&source=collection_link&creator=27529247"
+	},
+	"item": [
+		{
+			"name": "Sign up",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// -------------------------------\r",
+							"// 1. Multinational first names\r",
+							"// -------------------------------\r",
+							"const firstNames = [\r",
+							"    \"Aisha\", \"James\", \"Wei\", \"Maria\", \"Hiroshi\", \"Anita\", \"John\", \"Fatima\",\r",
+							"    \"Santiago\", \"Chen\", \"Elena\", \"Kwame\", \"Samuel\", \"Linda\", \"Yusuf\", \"Tariq\",\r",
+							"    \"Grace\", \"Ahmed\", \"Priya\", \"Nina\", \"Omar\", \"Helena\", \"Victor\", \"Lars\"\r",
+							"];\r",
+							"\r",
+							"// -------------------------------\r",
+							"// 2. Multinational last names\r",
+							"// -------------------------------\r",
+							"const lastNames = [\r",
+							"    \"Okafor\", \"Chen\", \"Hernandez\", \"Smith\", \"Tanaka\", \"Singh\", \"Oluwole\",\r",
+							"    \"Garcia\", \"Kim\", \"Khan\", \"Petrov\", \"Diallo\", \"Andersson\", \"Martins\",\r",
+							"    \"Santos\", \"Adams\", \"Nakamura\", \"Ali\", \"Haddad\", \"Johansson\", \"Lopez\"\r",
+							"];\r",
+							"\r",
+							"// ---------------------------------\r",
+							"// 3. Random name selection\r",
+							"// ---------------------------------\r",
+							"let first = firstNames[Math.floor(Math.random() * firstNames.length)];\r",
+							"let last = lastNames[Math.floor(Math.random() * lastNames.length)];\r",
+							"let fullName = `${first} ${last}`;\r",
+							"\r",
+							"// ---------------------------------\r",
+							"// 4. Generate Unique Email\r",
+							"// ---------------------------------\r",
+							"let randomNum = Math.floor(Math.random() * 90000) + 10000;\r",
+							"let email = `${first.toLowerCase()}${randomNum}@mailinator.com`;\r",
+							"\r",
+							"// ---------------------------------\r",
+							"// 5. Dynamic Strong Password\r",
+							"// ---------------------------------\r",
+							"let password = `Qa${randomNum}#${Math.floor(Math.random() * 9999)}`;\r",
+							"\r",
+							"// ---------------------------------\r",
+							"// 6. Nigerian Phone Number\r",
+							"// ---------------------------------\r",
+							"const prefixes = [\"080\", \"081\", \"090\", \"070\"];\r",
+							"let prefix = prefixes[Math.floor(Math.random() * prefixes.length)];\r",
+							"let phone = prefix + Math.floor(10000000 + Math.random() * 89999999);\r",
+							"\r",
+							"// ---------------------------------\r",
+							"// 7. Save as Collection Variables\r",
+							"// ---------------------------------\r",
+							"pm.collectionVariables.set(\"user_name\", fullName);\r",
+							"pm.globals.set(\"user_email\", email);\r",
+							"pm.globals.set(\"user_password\", password);\r",
+							"pm.collectionVariables.set(\"user_phone\", phone);\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// ---------- 1. Parse main sign-up response ----------\r",
+							"let response = pm.response.json();\r",
+							"\r",
+							"// ---------- 2. Positive Sign-up Validations ----------\r",
+							"pm.test(\"Sign-up success - status 201\", function () {\r",
+							"    pm.expect(pm.response.code).to.eql(201);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Time to sign-up should be less than 2000ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.below(2000);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Email returned matches input\", function () {\r",
+							"    pm.expect(response.email).to.eql(pm.collectionVariables.get(\"user_email\"));\r",
+							"});\r",
+							"\r",
+							"\r",
+							"// Save user ID if returned\r",
+							"if (response.user.id) {\r",
+							"    pm.collectionVariables.set(\"user_id\", response.user.id);\r",
+							"}\r",
+							"\r",
+							"// ---------- 3. Validate user object ----------\r",
+							"let user = response.user;\r",
+							"\r",
+							"// Completed onboarding should be false for first login\r",
+							"pm.test(\"Completed Onboarding should be false\", function () {\r",
+							"    pm.expect(user.completedOnboarding).to.eql(false);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"// Validate user fields against signup collection variables\r",
+							"pm.test(\"User fields should match signup values\", function () {\r",
+							"    pm.expect(user.email).to.eql(pm.globals.get(\"user_email\"));\r",
+							"    pm.expect(user.name).to.eql(pm.collectionVariables.get(\"user_name\"));\r",
+							"    pm.expect(user.phone).to.eql(pm.collectionVariables.get(\"user_phone\"));\r",
+							"\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"{{user_email}}\",\r\n  \"name\": \"{{user_name}}\",\r\n  \"password\": \"{{user_password}}\",\r\n  \"phone\": \"{{user_phone}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Base_Platform_Url}}/auth/signup",
+					"host": [
+						"{{Base_Platform_Url}}"
+					],
+					"path": [
+						"auth",
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// ---------- 1. Check response status first ----------",
+							"pm.test(\"Checking the status code of the response\", () => {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Checking the response time of the response\", () => {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"// ---------- 2. Handle authentication errors ----------",
+							"if (pm.response.code !== 200) {",
+							"    pm.test(\"Authentication failed - check credentials\", function () {",
+							"        let errorResponse;",
+							"        try {",
+							"            errorResponse = pm.response.json();",
+							"            console.log(\"Authentication error:\", errorResponse.error || errorResponse.message || \"Unknown error\");",
+							"        } catch (e) {",
+							"            console.log(\"Could not parse error response\");",
+							"        }",
+							"        pm.expect.fail(\"Login failed with status \" + pm.response.code);",
+							"    });",
+							"    return; // Stop execution if authentication failed",
+							"}",
+							"",
+							"// ---------- 3. Parse and validate response structure ----------",
+							"let response;",
+							"try {",
+							"    response = pm.response.json();",
+							"} catch (e) {",
+							"    pm.test(\"Response should be valid JSON\", function () {",
+							"        pm.expect.fail(\"Failed to parse response as JSON: \" + e.message);",
+							"    });",
+							"    return;",
+							"}",
+							"",
+							"pm.test(\"Response should contain access_token\", function () {",
+							"    pm.expect(response).to.have.property(\"access_token\");",
+							"    pm.expect(response.access_token).to.be.a(\"string\").and.not.empty;",
+							"});",
+							"",
+							"pm.test(\"Response should contain refresh_token\", function () {",
+							"    pm.expect(response).to.have.property(\"refresh_token\");",
+							"    pm.expect(response.refresh_token).to.be.a(\"string\").and.not.empty;",
+							"});",
+							"",
+							"pm.test(\"Response should contain user object\", function () {",
+							"    pm.expect(response).to.have.property(\"user\");",
+							"    pm.expect(response.user).to.be.an(\"object\");",
+							"});",
+							"",
+							"// ---------- 4. Set tokens only if valid ----------",
+							"if (response.access_token && response.refresh_token) {",
+							"    pm.collectionVariables.set(\"access_token\", response.access_token);",
+							"    pm.collectionVariables.set(\"refresh_token\", response.refresh_token);",
+							"}",
+							"",
+							"// ---------- 5. Validate user properties (resilient) ----------",
+							"let user = response.user;",
+							"",
+							"if (user) {",
+							"    pm.test(\"Completed Onboarding should be false\", function () {",
+							"        pm.expect(user).to.have.property(\"completedOnboarding\");",
+							"        pm.expect(user.completedOnboarding).to.eql(false);",
+							"    });",
+							"",
+							"    pm.test(\"Phone, Name, ID, CreatedAt, Email should match signup\", function () {",
+							"        if (user.phone !== undefined) {",
+							"            pm.expect(user.phone).to.eql(pm.collectionVariables.get(\"user_phone\"));",
+							"        }",
+							"        if (user.name !== undefined) {",
+							"            pm.expect(user.name).to.eql(pm.collectionVariables.get(\"user_name\"));",
+							"        }",
+							"        if (user.id !== undefined) {",
+							"            pm.expect(user.id).to.eql(pm.collectionVariables.get(\"user_id\"));",
+							"        }",
+							"        if (user.email !== undefined) {",
+							"            pm.expect(user.email).to.eql(pm.globals.get(\"user_email\"));",
+							"        }",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"{{user_email}}\",\r\n  \"password\": \"{{user_password}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Base_Platform_Url}}/auth/signin",
+					"host": [
+						"{{Base_Platform_Url}}"
+					],
+					"path": [
+						"auth",
+						"signin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Quick Crawler",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Checking the status code\r",
+							"pm.test(\"Testing the status code returned\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Tesign the response time for the api\", () => {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(10000); // 2 seconds\r",
+							"});\r",
+							"\r",
+							"\r",
+							"let res = pm.response.json();\r",
+							"\r",
+							"if (res.message && res.status){\r",
+							"    pm.test(\"Response message is correct\", function () {\r",
+							"    pm.expect(res.message).to.eql(\"Quick analysis completed successfully\");\r",
+							"    });\r",
+							"    pm.test(\"Response status is correct\", function () {\r",
+							"        pm.expect(res.status).to.eql(\"completed\");\r",
+							"    })\r",
+							"\r",
+							"};\r",
+							"\r",
+							"\r",
+							"// Safe helper for null values\r",
+							"function safe(value, fallback = \"\") {\r",
+							"    return value === null || value === undefined ? fallback : value;\r",
+							"}\r",
+							"\r",
+							"// ========== 1. EXTRACT COMPANY INFO ==========\r",
+							"pm.collectionVariables.set(\"company_name\", safe(res.data.company.name));\r",
+							"pm.collectionVariables.set(\"company_website\", safe(res.data.company.website));\r",
+							"pm.collectionVariables.set(\"company_email\", safe(res.data.company.email, \"info@example.com\"));\r",
+							"pm.collectionVariables.set(\"company_phone\", safe(res.data.company.phone, \"+00000000000\"));\r",
+							"pm.collectionVariables.set(\"company_linkedin\", safe(res.data.company.linkedin_url, \"\"));\r",
+							"\r",
+							"// ========== 2. EXTRACT LOCATION ==========\r",
+							"pm.collectionVariables.set(\"company_country\", safe(res.data.location.country, \"Unknown\"));\r",
+							"pm.collectionVariables.set(\"company_city\", safe(res.data.location.city, \"Unknown City\"));\r",
+							"pm.collectionVariables.set(\"company_address\", safe(res.data.location.address, \"Not Provided\"));\r",
+							"\r",
+							"// Billing reuse\r",
+							"pm.collectionVariables.set(\"billing_country\", safe(res.data.location.country, \"Unknown\"));\r",
+							"pm.collectionVariables.set(\"billing_city\", safe(res.data.location.city, \"Unknown City\"));\r",
+							"pm.collectionVariables.set(\"billing_line1\", safe(res.data.location.address, \"Not Provided\"));\r",
+							"pm.collectionVariables.set(\"billing_line2\", \"\");\r",
+							"pm.collectionVariables.set(\"billing_state\", \"\");\r",
+							"pm.collectionVariables.set(\"billing_postal_code\", \"\");\r",
+							"\r",
+							"// ========== 3. INDUSTRY ==========\r",
+							"pm.collectionVariables.set(\"company_industry\", safe(res.data.category, \"General\"));\r",
+							"\r",
+							"// ========== 4. SOCIAL (ALL NULL → FALLBACKS) ==========\r",
+							"pm.collectionVariables.set(\"facebook_page\", \"\");\r",
+							"pm.collectionVariables.set(\"instagram_profile\", \"\");\r",
+							"pm.collectionVariables.set(\"linkedin_profile\", safe(res.data.company.linkedin_url, \"\"));\r",
+							"pm.collectionVariables.set(\"tiktok_profile\", \"\");\r",
+							"pm.collectionVariables.set(\"youtube_channel\", \"\");\r",
+							"pm.collectionVariables.set(\"x_profile\", \"\");\r",
+							"\r",
+							"// ========== 5. EXTRACT TECHNOLOGIES ==========\r",
+							"let techList = (res.data.technologies || []).map(t => t.name);\r",
+							"pm.collectionVariables.set(\"company_technologies\", JSON.stringify(techList));\r",
+							"pm.collectionVariables.set(\"company_framework\", techList.find(t => [\"React\",\"Vue\",\"Angular\",\"Webflow\"].includes(t)) || \"Web\");\r",
+							"\r",
+							"// ========== 6. CONFIRM TEST ==========\r",
+							"pm.test(\"Crawler variables successfully extracted\", function () {\r",
+							"    pm.expect(pm.collectionVariables.get(\"company_name\")).to.not.be.undefined;\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"/// ===============================\r",
+							"// NEGATIVE TEST CASES – CRAWLER\r",
+							"// ===============================\r",
+							"\r",
+							"const BASE_URL = \"https://crawler-staging.reqarchitect.com/api/v1/platform/crawler/start\";\r",
+							"\r",
+							"\r",
+							"// ---------------------------------------------------------------------------\r",
+							"// 1. REQUEST WITHOUT AUTHENTICATION\r",
+							"// ---------------------------------------------------------------------------\r",
+							"\r",
+							"pm.sendRequest(\r",
+							"{\r",
+							"    url: BASE_URL,\r",
+							"    method: \"POST\",\r",
+							"    header: {\r",
+							"        \"Content-Type\": \"application/json\",\r",
+							"        \"Authorization\": \"\"            // No token\r",
+							"    },\r",
+							"    body: {\r",
+							"        mode: \"raw\",\r",
+							"        raw: JSON.stringify({ url: \"https://www.trustate.com/\" })\r",
+							"    }\r",
+							"},\r",
+							"function (err, res) {\r",
+							"\r",
+							"    pm.test(\"❌ No Auth → Status should be 401\", function () {\r",
+							"        pm.expect(res.code).to.eql(401);\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"❌ No Auth → Response must contain error\", function () {\r",
+							"        const body = res.json();\r",
+							"        pm.expect(body).to.have.property(\"detail\");\r",
+							"    });\r",
+							"});\r",
+							"  \r",
+							"\r",
+							"// ---------------------------------------------------------------------------\r",
+							"// 2. MALFORMED ACCESS TOKEN\r",
+							"// ---------------------------------------------------------------------------\r",
+							"\r",
+							"pm.sendRequest(\r",
+							"{\r",
+							"    url: BASE_URL,\r",
+							"    method: \"POST\",\r",
+							"    header: {\r",
+							"        \"Content-Type\": \"application/json\",\r",
+							"        \"Authorization\": \"Bearer \" + pm.collectionVariables.get(\"access_token\") + \"XYZ123\"   // Corrupted token\r",
+							"    },\r",
+							"    body: {\r",
+							"        mode: \"raw\",\r",
+							"        raw: JSON.stringify({ url: \"https://www.trustate.com/\" })\r",
+							"    }\r",
+							"},\r",
+							"function (err, res) {\r",
+							"\r",
+							"    pm.test(\"Malformed token → Status 401\", function () {\r",
+							"        pm.expect(res.code).to.eql(401);\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"Malformed token → Invalid signature message\", function () {\r",
+							"        const body = res.json();\r",
+							"        pm.expect(body.detail.toLowerCase()).to.include(\"invalid\");\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"// ---------------------------------------------------------------------------\r",
+							"// 3. EXPIRED ACCESS TOKEN\r",
+							"// ---------------------------------------------------------------------------\r",
+							"\r",
+							"pm.sendRequest(\r",
+							"{\r",
+							"    url: BASE_URL,\r",
+							"    method: \"POST\",\r",
+							"    header: {\r",
+							"        \"Content-Type\": \"application/json\",\r",
+							"        \"Authorization\": \"Bearer EXPIRED_TOKEN_12345\"\r",
+							"    },\r",
+							"    body: {\r",
+							"        mode: \"raw\",\r",
+							"        raw: JSON.stringify({ url: \"https://www.trustate.com/\" })\r",
+							"    }\r",
+							"},\r",
+							"function (err, res) {\r",
+							"\r",
+							"    pm.test(\"Expired token → Status 401\", function () {\r",
+							"        pm.expect(res.code).to.eql(401);\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"Expired token → Message should indicate expiry\", function () {\r",
+							"        const body = res.json();\r",
+							"        pm.expect(body.detail.toLowerCase()).to.include(\"expired\");\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"// ---------------------------------------------------------------------------\r",
+							"// 4. INVALID INPUT (PARAMETERIZED)\r",
+							"// ---------------------------------------------------------------------------\r",
+							"\r",
+							"// Array of invalid crawler inputs\r",
+							"const invalidPayloads = [\r",
+							"    { url: \"\" },                         // empty URL\r",
+							"    { url: \"not-a-real-url\" },           // bad URL format\r",
+							"    { url: \"http://\" },                  // incomplete URL\r",
+							"    { url: \"www.google\" },               // missing protocol\r",
+							"    { url: \"🔥🔥🔥\" },                    // unicode garbage\r",
+							"    { url: 12345 },                      // wrong datatype\r",
+							"    { url: null },                       // null payload\r",
+							"    { url: \"javascript:alert('hack')\" }, // script injection\r",
+							"    { },                                 // missing property entirely\r",
+							"    { url: \"https:// this is invalid .com\" }, // spaces inside URL\r",
+							"];\r",
+							"\r",
+							"// Loop through invalid inputs\r",
+							"invalidPayloads.forEach((payload) => {\r",
+							"\r",
+							"    pm.sendRequest(\r",
+							"    {\r",
+							"        url: BASE_URL,\r",
+							"        method: \"POST\",\r",
+							"        header: {\r",
+							"            \"Content-Type\": \"application/json\",\r",
+							"            \"Authorization\": \"Bearer \" + pm.collectionVariables.get(\"access_token\")\r",
+							"        },\r",
+							"        body: {\r",
+							"            mode: \"raw\",\r",
+							"            raw: JSON.stringify(payload)\r",
+							"        }\r",
+							"    },\r",
+							"    function (err, res) {\r",
+							"\r",
+							"        const body = res.json();\r",
+							"\r",
+							"        pm.test(`Invalid Input (${JSON.stringify(payload)}) → Should return 400`, function () {\r",
+							"            pm.expect(res.code).to.be.oneOf([400, 422]);   // depending on backend validation\r",
+							"        });\r",
+							"\r",
+							"        pm.test(`Invalid Input (${JSON.stringify(payload)}) → Body should contain error`, function () {\r",
+							"            pm.expect(body).to.be.an(\"object\");\r",
+							"            pm.expect(body).to.have.property(\"detail\");\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"url\": \"https://www.awf.org/wildlife-conservation/bongo\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Base_Crawler_Url}}api/crawler/analysis/quick",
+					"host": [
+						"{{Base_Crawler_Url}}api"
+					],
+					"path": [
+						"crawler",
+						"analysis",
+						"quick"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Organization",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let res = pm.response.json();\r",
+							"\r",
+							"pm.collectionVariables.set(\"organization_id\", res.id);\r",
+							"\r",
+							"// Helper: compare array values\r",
+							"function compareArrays(actual, expected, field) {\r",
+							"    pm.test(`Validate ARRAY field: ${field}`, function () {\r",
+							"        pm.expect(Array.isArray(actual)).to.eql(true);\r",
+							"        pm.expect(actual).to.eql(expected);\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"// Helper: compare string/boolean values\r",
+							"function compareValues(actual, expected, field) {\r",
+							"    pm.test(`Validate field: ${field}`, function () {\r",
+							"        pm.expect(actual).to.eql(expected);\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"// Helper: get variable safely\r",
+							"function getVar(name) {\r",
+							"    return pm.collectionVariables.get(name);\r",
+							"}\r",
+							"\r",
+							"// ===============================================\r",
+							"// MAPPINGS — responseField : collectionVariable\r",
+							"// ===============================================\r",
+							"\r",
+							"const FIELD_MAP = {\r",
+							"    name: \"company_name\",\r",
+							"    address: \"company_address\",\r",
+							"    phone: \"company_phone\",\r",
+							"    email: \"company_email\",\r",
+							"    website: \"company_website\",\r",
+							"    facebookPage: \"facebook_page\",\r",
+							"    instagramProfile: \"instagram_profile\",\r",
+							"    linkedInProfile: \"linkedin_profile\",\r",
+							"    tikTokProfile: \"tiktok_profile\",\r",
+							"    xProfile: \"x_profile\",\r",
+							"    youTubeChannel: \"youtube_channel\",\r",
+							"\r",
+							"    // Billing\r",
+							"    billingCity: \"billing_city\",\r",
+							"    billingCountry: \"billing_country\",\r",
+							"    billingLine1: \"billing_line1\",\r",
+							"    billingLine2: \"billing_line2\",\r",
+							"    billingPostalCode: \"billing_postal_code\",\r",
+							"    billingState: \"billing_state\",\r",
+							"    billingEmail: null, // static → skip\r",
+							"\r",
+							"    // Framework, industry\r",
+							"    devFramework: \"company_framework\",\r",
+							"    industry: \"company_industry\",\r",
+							"\r",
+							"    // Country\r",
+							"    country: \"company_country\",\r",
+							"\r",
+							"    // Technology arrays\r",
+							"    existingFrameworks: \"company_technologies\"\r",
+							"};\r",
+							"\r",
+							"// ===============================================\r",
+							"// VALIDATION ENGINE\r",
+							"// ===============================================\r",
+							"\r",
+							"Object.keys(FIELD_MAP).forEach(responseField => {\r",
+							"\r",
+							"    let varName = FIELD_MAP[responseField];\r",
+							"\r",
+							"    // Skip static fields with no variable source\r",
+							"    if (!varName) return;\r",
+							"\r",
+							"    let expected = getVar(varName);\r",
+							"\r",
+							"    // Parse arrays\r",
+							"    if (responseField === \"existingFrameworks\") {\r",
+							"        try {\r",
+							"            expected = JSON.parse(expected);\r",
+							"        } catch (e) {\r",
+							"            expected = [];\r",
+							"        }\r",
+							"        return compareArrays(res[responseField], expected, responseField);\r",
+							"    }\r",
+							"\r",
+							"    // Normal values\r",
+							"    compareValues(res[responseField], expected, responseField);\r",
+							"});\r",
+							"\r",
+							"// ===============================================\r",
+							"// Extra: Confirm ID + Timestamps\r",
+							"// ===============================================\r",
+							"\r",
+							"pm.test(\"Organization ID present\", () => {\r",
+							"    pm.expect(res.id).to.exist;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"CreatedAt present\", () => {\r",
+							"    pm.expect(res.createdAt).to.exist;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"UpdatedAt present\", () => {\r",
+							"    pm.expect(res.updatedAt).to.exist;\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"address\": \"{{company_address}}\",\r\n  \"billingCity\": \"{{billing_city}}\",\r\n  \"billingCountry\": \"{{billing_country}}\",\r\n  \"billingEmail\": \"billing@testcompany.io\",\r\n  \"billingLine1\": \"{{billing_line1}}\",\r\n  \"billingLine2\": \"{{billing_line2}}\",\r\n  \"billingPostalCode\": \"{{billing_postal_code}}\",\r\n  \"billingState\": \"{{billing_state}}\",\r\n  \"businessOperationHours\": \"09:00 - 17:00\",\r\n  \"companySize\": \"2-10\",\r\n  \"complianceRequirements\": [\r\n    \"PCI-DSS\",\r\n    \"ISO 27001\"\r\n  ],\r\n  \"country\": \"{{company_country}}\",\r\n  \"devCicdPreference\": \"GitHub Actions\",\r\n  \"devDeploymentTarget\": \"AWS\",\r\n  \"devFramework\": \"{{company_framework}}\",\r\n  \"devIntegrationTargets\": [\r\n    \"Stripe API\",\r\n    \"Firebase\"\r\n  ],\r\n  \"devLanguage\": \"TypeScript\",\r\n  \"devSelectedTemplate\": \"E-commerce Template v2\",\r\n  \"dtBudgetRange\": \"$5,000 - $10,000\",\r\n  \"dtBusinessPriorities\": [\r\n    \"Automation\",\r\n    \"Scalability\"\r\n  ],\r\n  \"dtCurrentSystems\": [\r\n    \"Custom CRM\",\r\n    \"QuickBooks\"\r\n  ],\r\n  \"dtImplementationApproach\": \"Agile\",\r\n  \"dtSelectedTemplates\": \"Digital Store Premium\",\r\n  \"dtSkipped\": true,\r\n  \"email\": \"{{company_email}}\",\r\n  \"existingFrameworks\": {{company_technologies}},\r\n  \"facebookPage\": \"{{facebook_page}}\",\r\n  \"governanceMaturity\": \"Intermediate\",\r\n  \"hasDevelopmentTeam\": true,\r\n  \"hasExistingPlatforms\": true,\r\n  \"implementationTypes\": [\r\n    \"Cloud Migration\",\r\n    \"API Development\"\r\n  ],\r\n  \"industry\": \"{{company_industry}}\",\r\n  \"instagramProfile\": \"{{instagram_profile}}\",\r\n  \"linkedInProfile\": \"{{linkedin_profile}}\",\r\n  \"logo\": \"https://cdn.testcompany.io/logo.png\",\r\n  \"name\": \"{{company_name}}\",\r\n  \"onboardingData\": \"Initial onboarding completed.\",\r\n  \"phone\": \"{{company_phone}}\",\r\n  \"selectedTemplateCategories\": [\r\n    \"E-commerce\",\r\n    \"Banking\"\r\n  ],\r\n  \"slug\": \"test2-company\",\r\n  \"tikTokProfile\": \"{{tiktok_profile}}\",\r\n  \"useIndustryTemplate\": true,\r\n  \"website\": \"{{company_website}}\",\r\n  \"xProfile\": \"{{x_profile}}\",\r\n  \"youTubeChannel\": \"{{youtube_channel}}\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Base_Platform_Url}}/organizations",
+					"host": [
+						"{{Base_Platform_Url}}"
+					],
+					"path": [
+						"organizations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get organization by ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let res = pm.response.json();\r",
+							"pm.test(\"Status code is 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"})\r",
+							" \r",
+							"pm.test(\"Checking the response time\", () => {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"})\r",
+							"pm.test(\"Validate: organization_id\", () => {\r",
+							"    pm.expect(res.id).to.eql(pm.collectionVariables.get(\"organization_id\"));\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validate: company_name\", () => {\r",
+							"    pm.expect(res.name).to.eql(pm.collectionVariables.get(\"company_name\"));\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validate: company_email\", () => {\r",
+							"    pm.expect(res.email).to.eql(pm.collectionVariables.get(\"company_email\"));\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validate: company_website\", () => {\r",
+							"    pm.expect(res.website).to.eql(pm.collectionVariables.get(\"company_website\"));\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Validate: billing_line1\", () => {\r",
+							"    pm.expect(res.billingLine1).to.eql(pm.collectionVariables.get(\"billing_line1\"));\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validate: website (again)\", () => {\r",
+							"    pm.expect(res.website).to.eql(pm.collectionVariables.get(\"company_website\"));\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validate: billingEmail\", () => {\r",
+							"    pm.expect(res.billingEmail).to.eql(\"billing@testcompany.io\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validate: devCicdPreference\", () => {\r",
+							"    pm.expect(res.devCicdPreference).to.eql(\"GitHub Actions\");\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Validate: devDeploymentTarget\", () => {\r",
+							"    pm.expect(res.devDeploymentTarget).to.eql(\"AWS\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validate: devLanguage\", () => {\r",
+							"    pm.expect(res.devLanguage).to.eql(\"TypeScript\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validate: devSelectedTemplate\", () => {\r",
+							"    pm.expect(res.devSelectedTemplate).to.eql(\"E-commerce Template v2\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validate: dtBudgetRange\", () => {\r",
+							"    pm.expect(res.dtBudgetRange).to.eql(\"$5,000 - $10,000\");\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"// =============================\r",
+							"// NEGATIVE TEST INPUTS\r",
+							"// =============================\r",
+							"let negative_inputs = [\r",
+							"    {\r",
+							"        organization_id: \" \",\r",
+							"        label: \"Organization ID is blank\",\r",
+							"        expected_error: \"Organization not found\"\r",
+							"    },\r",
+							"    {\r",
+							"        organization_id: \"one-two-three\",\r",
+							"        label: \"Organization ID is spelled-out number\",\r",
+							"        expected_error: \"Organization not found\"\r",
+							"    },\r",
+							"    {\r",
+							"        organization_id: \"123456789999999999\",\r",
+							"        label: \"Wrong/Non-existing Organization ID\",\r",
+							"        expected_error: \"Organization not found\"\r",
+							"    },\r",
+							"    {\r",
+							"        organization_id: \"deleted-org-id-123\",\r",
+							"        label: \"Deleted Organization ID\",\r",
+							"        expected_error: \"Organization not found\"\r",
+							"    }\r",
+							"];\r",
+							"\r",
+							"\r",
+							"// =============================\r",
+							"// ACCESS TOKEN (IMPORTANT)\r",
+							"// =============================\r",
+							"let token = pm.collectionVariables.get(\"access_token\");\r",
+							"\r",
+							"\r",
+							"// =============================\r",
+							"// LOOP THROUGH TEST CASES\r",
+							"// =============================\r",
+							"negative_inputs.forEach(tc => {\r",
+							"\r",
+							"    let url = `https://platforms-staging.reqarchitect.com/api/v1/platform/organizations/${tc.organization_id}`;\r",
+							"\r",
+							"    pm.sendRequest({\r",
+							"        url: url,\r",
+							"        method: \"GET\",\r",
+							"        header: {\r",
+							"            \"Authorization\": `Bearer ${token}`,\r",
+							"            \"Content-Type\": \"application/json\"\r",
+							"        }\r",
+							"    }, function (err, res) {\r",
+							"\r",
+							"        pm.test(tc.label + \" | Status code should be 4xx\", function () {\r",
+							"            pm.expect(res.code).to.be.oneOf([400, 404, 422]);\r",
+							"        });\r",
+							"\r",
+							"        pm.test(tc.label + \" | Error message should match expectation\", function () {\r",
+							"            let json = res.json();\r",
+							"            pm.expect(JSON.stringify(json)).to.include(tc.expected_error);\r",
+							"        });\r",
+							"\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"// =========================================\r",
+							"// TOKEN NEGATIVE TEST CASES\r",
+							"// =========================================\r",
+							"\r",
+							"// Your endpoint (replace the id if needed)\r",
+							"let endpoint = \"https://platforms-staging.reqarchitect.com/api/v1/platform/organizations/\"+ pm.collectionVariables.get(\"organization_id\");\r",
+							"\r",
+							"// Test tokens\r",
+							"let tokenTests = [\r",
+							"    {\r",
+							"        label: \"No Token Provided\",\r",
+							"        token: null,\r",
+							"        expected_status: [401, 403],\r",
+							"        expected_error: \"invalid access token\"\r",
+							"    },\r",
+							"    {\r",
+							"        label: \"Wrong / Random Token\",\r",
+							"        token: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhY2NvdW50IiwiY29tcGxldGVkT25ib2FyZGluZyI6ZmFsc2UsImNzcmYiOiI0ZGFlY2ZlYS0xZjEwLTQ3MTYtYTZjYS1hMTFkZGJmZDcyMGYiLCJlbWFpbCI6InRhcmlxNDk1MjRAbWFpbGluYXRvci5jb20iLCJleHAiOjE3NjQ2NzIzMTQsImZyZXNoIjpmYWxzZSwiaWF0IjoxNzY0NjcxNDE0LCJpc3MiOiJwbGF0Zm9ybXMtYXBpLnJlcWFyY2hpdGVjdC5jb20iLCJqdGkiOiI4NTMwYzcxMi1iOGY2LTQ2NTktYmM5NC0zMzU1NzVhMDJjNTYiLCJuYW1lIjoiVGFyaXEgT2thZm9yIiwibmJmIjoxNzY0NjcxNDE0LCJvcmdhbml6YXRpb25JZCI6IiIsInJvbGUiOiJVU0VSIiwic3ViIjoiZWE4MmE4ODEtMDUzNy00YjY3LWEzYjctNzg3Mjc3YTdmMjk2IiwidHlwZSI6ImFjY2VzcyJ9.hhxQLQbgboF1jhXwnxkCwgAeMeV5LCfEAzooO-bhgX\",\r",
+							"        expected_status: [401, 403],\r",
+							"        expected_error: \"invalid access token\"\r",
+							"    },\r",
+							"    {\r",
+							"        label: \"Expired Token (Same User)\",\r",
+							"        token: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhY2NvdW50IiwiY29tcGxldGVkT25ib2FyZGluZyI6ZmFsc2UsImNzcmYiOiI0ZGFlY2ZlYS0xZjEwLTQ3MTYtYTZjYS1hMTFkZGJmZDcyMGYiLCJlbWFpbCI6InRhcmlxNDk1MjRAbWFpbGluYXRvci5jb20iLCJleHAiOjE3NjQ2NzIzMTQsImZyZXNoIjpmYWxzZSwiaWF0IjoxNzY0NjcxNDE0LCJpc3MiOiJwbGF0Zm9ybXMtYXBpLnJlcWFyY2hpdGVjdC5jb20iLCJqdGkiOiI4NTMwYzcxMi1iOGY2LTQ2NTktYmM5NC0zMzU1NzVhMDJjNTYiLCJuYW1lIjoiVGFyaXEgT2thZm9yIiwibmJmIjoxNzY0NjcxNDE0LCJvcmdhbml6YXRpb25JZCI6IiIsInJvbGUiOiJVU0VSIiwic3ViIjoiZWE4MmE4ODEtMDUzNy00YjY3LWEzYjctNzg3Mjc3YTdmMjk2IiwidHlwZSI6ImFjY2VzcyJ9.hhxQLQbgboF1jhXwnxkCwgAeMeV5LCfEAzooO-bhgX8\",\r",
+							"        expected_status: [401, 403],\r",
+							"        expected_error: \"invalid access token\"\r",
+							"    },\r",
+							"];\r",
+							"\r",
+							"// =========================================\r",
+							"// PARAMETERIZED REQUESTS\r",
+							"// =========================================\r",
+							"tokenTests.forEach(tc => {\r",
+							"\r",
+							"    pm.sendRequest({\r",
+							"        url: endpoint,\r",
+							"        method: \"GET\",\r",
+							"        header: tc.token ? { \r",
+							"            \"Authorization\": tc.token,\r",
+							"            \"Content-Type\": \"application/json\"\r",
+							"        } : {\r",
+							"            \"Content-Type\": \"application/json\"\r",
+							"        }\r",
+							"    }, function (err, res) {\r",
+							"\r",
+							"        // 1. STATUS CODE TEST\r",
+							"        pm.test(tc.label + \" | Should return 401 or 403\", function () {\r",
+							"            pm.expect(res.code).to.be.oneOf(tc.expected_status);\r",
+							"        });\r",
+							"\r",
+							"        // 2. ERROR MESSAGE TEST\r",
+							"        pm.test(tc.label + \" | Should contain correct error message\", function () {\r",
+							"            let body = JSON.stringify(res.json() || {});\r",
+							"            pm.expect(body.toLowerCase()).to.include(tc.expected_error);\r",
+							"        });\r",
+							"\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{Base_Platform_Url}}/organizations/:id",
+					"host": [
+						"{{Base_Platform_Url}}"
+					],
+					"path": [
+						"organizations",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "{{organization_id}}",
+							"description": "Organization ID"
+						}
+					]
+				},
+				"description": "Get an organization by their ID"
+			},
+			"response": [
+				{
+					"name": "OK",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "string",
+									"description": "Organization ID"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"address\": \"string\",\n  \"billingCity\": \"string\",\n  \"billingCountry\": \"string\",\n  \"billingCustomerId\": \"string\",\n  \"billingEmail\": \"string\",\n  \"billingLine1\": \"string\",\n  \"billingLine2\": \"string\",\n  \"billingPostalCode\": \"string\",\n  \"billingState\": \"string\",\n  \"businessOperationHours\": \"string\",\n  \"companySize\": \"string\",\n  \"complianceRequirements\": [\n    \"string\",\n    \"string\"\n  ],\n  \"country\": \"string\",\n  \"createdAt\": \"string\",\n  \"devCicdPreference\": \"string\",\n  \"devDeploymentTarget\": \"string\",\n  \"devFramework\": \"string\",\n  \"devIntegrationTargets\": [\n    \"string\",\n    \"string\"\n  ],\n  \"devLanguage\": \"string\",\n  \"devSelectedTemplate\": \"string\",\n  \"dtBudgetRange\": \"string\",\n  \"dtBusinessPriorities\": [\n    \"string\",\n    \"string\"\n  ],\n  \"dtCurrentSystems\": [\n    \"string\",\n    \"string\"\n  ],\n  \"dtImplementationApproach\": \"string\",\n  \"dtSelectedTemplates\": \"string\",\n  \"dtSkipped\": true,\n  \"email\": \"string\",\n  \"existingFrameworks\": [\n    \"string\",\n    \"string\"\n  ],\n  \"facebookPage\": \"string\",\n  \"governanceMaturity\": \"string\",\n  \"hasDevelopmentTeam\": true,\n  \"hasExistingPlatforms\": true,\n  \"id\": \"string\",\n  \"implementationTypes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"industry\": \"string\",\n  \"instagramProfile\": \"string\",\n  \"lastDashboardRefresh\": \"string\",\n  \"linkedInProfile\": \"string\",\n  \"logo\": \"string\",\n  \"name\": \"string\",\n  \"onboardingCompletedAt\": \"string\",\n  \"onboardingData\": \"string\",\n  \"phone\": \"string\",\n  \"selectedTemplateCategories\": [\n    \"string\",\n    \"string\"\n  ],\n  \"slug\": \"string\",\n  \"tikTokProfile\": \"string\",\n  \"updatedAt\": \"string\",\n  \"useIndustryTemplate\": true,\n  \"website\": \"string\",\n  \"xProfile\": \"string\",\n  \"youTubeChannel\": \"string\"\n}"
+				},
+				{
+					"name": "Bad Request",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "string",
+									"description": "Organization ID"
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"details\": \"\",\n  \"error\": \"string\",\n  \"message\": \"string\"\n}"
+				},
+				{
+					"name": "Unauthorized",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "string",
+									"description": "Organization ID"
+								}
+							]
+						}
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"details\": \"\",\n  \"error\": \"string\",\n  \"message\": \"string\"\n}"
+				},
+				{
+					"name": "Not Found",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "string",
+									"description": "Organization ID"
+								}
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"details\": \"\",\n  \"error\": \"string\",\n  \"message\": \"string\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Update organization",
+			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": [
+						{
+							"key": "key",
+							"value": "Authorization",
+							"type": "string"
+						},
+						{
+							"key": "value",
+							"value": "{{apiKey}}",
+							"type": "string"
+						},
+						{
+							"key": "in",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"address\": \"string\",\n  \"billingCity\": \"string\",\n  \"billingCountry\": \"string\",\n  \"billingEmail\": \"string\",\n  \"billingLine1\": \"string\",\n  \"billingLine2\": \"string\",\n  \"billingPostalCode\": \"string\",\n  \"billingState\": \"string\",\n  \"businessOperationHours\": \"string\",\n  \"companySize\": \"string\",\n  \"complianceRequirements\": [\n    \"string\",\n    \"string\"\n  ],\n  \"country\": \"string\",\n  \"devCicdPreference\": \"string\",\n  \"devDeploymentTarget\": \"string\",\n  \"devFramework\": \"string\",\n  \"devIntegrationTargets\": [\n    \"string\",\n    \"string\"\n  ],\n  \"devLanguage\": \"string\",\n  \"devSelectedTemplate\": \"string\",\n  \"dtBudgetRange\": \"string\",\n  \"dtBusinessPriorities\": [\n    \"string\",\n    \"string\"\n  ],\n  \"dtCurrentSystems\": [\n    \"string\",\n    \"string\"\n  ],\n  \"dtImplementationApproach\": \"string\",\n  \"dtSelectedTemplates\": \"string\",\n  \"dtSkipped\": false,\n  \"email\": \"string\",\n  \"existingFrameworks\": [\n    \"string\",\n    \"string\"\n  ],\n  \"facebookPage\": \"string\",\n  \"governanceMaturity\": \"string\",\n  \"hasDevelopmentTeam\": false,\n  \"hasExistingPlatforms\": false,\n  \"implementationTypes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"industry\": \"string\",\n  \"instagramProfile\": \"string\",\n  \"linkedInProfile\": \"string\",\n  \"logo\": \"string\",\n  \"name\": \"string\",\n  \"onboardingData\": \"string\",\n  \"phone\": \"string\",\n  \"selectedTemplateCategories\": [\n    \"string\",\n    \"string\"\n  ],\n  \"slug\": \"string\",\n  \"tikTokProfile\": \"string\",\n  \"useIndustryTemplate\": false,\n  \"website\": \"string\",\n  \"xProfile\": \"string\",\n  \"youTubeChannel\": \"string\"\n}",
+					"options": {
+						"raw": {
+							"headerFamily": "json",
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Base_Platform_Url}}/organizations/:id",
+					"host": [
+						"{{Base_Platform_Url}}"
+					],
+					"path": [
+						"organizations",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "{{organization_id}}",
+							"description": "Organization ID"
+						}
+					]
+				},
+				"description": "Update an organization by their ID"
+			},
+			"response": [
+				{
+					"name": "OK",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"address\": \"string\",\n  \"billingCity\": \"string\",\n  \"billingCountry\": \"string\",\n  \"billingEmail\": \"string\",\n  \"billingLine1\": \"string\",\n  \"billingLine2\": \"string\",\n  \"billingPostalCode\": \"string\",\n  \"billingState\": \"string\",\n  \"businessOperationHours\": \"string\",\n  \"companySize\": \"string\",\n  \"complianceRequirements\": [\n    \"string\",\n    \"string\"\n  ],\n  \"country\": \"string\",\n  \"devCicdPreference\": \"string\",\n  \"devDeploymentTarget\": \"string\",\n  \"devFramework\": \"string\",\n  \"devIntegrationTargets\": [\n    \"string\",\n    \"string\"\n  ],\n  \"devLanguage\": \"string\",\n  \"devSelectedTemplate\": \"string\",\n  \"dtBudgetRange\": \"string\",\n  \"dtBusinessPriorities\": [\n    \"string\",\n    \"string\"\n  ],\n  \"dtCurrentSystems\": [\n    \"string\",\n    \"string\"\n  ],\n  \"dtImplementationApproach\": \"string\",\n  \"dtSelectedTemplates\": \"string\",\n  \"dtSkipped\": false,\n  \"email\": \"string\",\n  \"existingFrameworks\": [\n    \"string\",\n    \"string\"\n  ],\n  \"facebookPage\": \"string\",\n  \"governanceMaturity\": \"string\",\n  \"hasDevelopmentTeam\": false,\n  \"hasExistingPlatforms\": false,\n  \"implementationTypes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"industry\": \"string\",\n  \"instagramProfile\": \"string\",\n  \"linkedInProfile\": \"string\",\n  \"logo\": \"string\",\n  \"name\": \"string\",\n  \"onboardingData\": \"string\",\n  \"phone\": \"string\",\n  \"selectedTemplateCategories\": [\n    \"string\",\n    \"string\"\n  ],\n  \"slug\": \"string\",\n  \"tikTokProfile\": \"string\",\n  \"useIndustryTemplate\": false,\n  \"website\": \"string\",\n  \"xProfile\": \"string\",\n  \"youTubeChannel\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "string",
+									"description": "Organization ID"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"address\": \"string\",\n  \"billingCity\": \"string\",\n  \"billingCountry\": \"string\",\n  \"billingCustomerId\": \"string\",\n  \"billingEmail\": \"string\",\n  \"billingLine1\": \"string\",\n  \"billingLine2\": \"string\",\n  \"billingPostalCode\": \"string\",\n  \"billingState\": \"string\",\n  \"businessOperationHours\": \"string\",\n  \"companySize\": \"string\",\n  \"complianceRequirements\": [\n    \"string\",\n    \"string\"\n  ],\n  \"country\": \"string\",\n  \"createdAt\": \"string\",\n  \"devCicdPreference\": \"string\",\n  \"devDeploymentTarget\": \"string\",\n  \"devFramework\": \"string\",\n  \"devIntegrationTargets\": [\n    \"string\",\n    \"string\"\n  ],\n  \"devLanguage\": \"string\",\n  \"devSelectedTemplate\": \"string\",\n  \"dtBudgetRange\": \"string\",\n  \"dtBusinessPriorities\": [\n    \"string\",\n    \"string\"\n  ],\n  \"dtCurrentSystems\": [\n    \"string\",\n    \"string\"\n  ],\n  \"dtImplementationApproach\": \"string\",\n  \"dtSelectedTemplates\": \"string\",\n  \"dtSkipped\": true,\n  \"email\": \"string\",\n  \"existingFrameworks\": [\n    \"string\",\n    \"string\"\n  ],\n  \"facebookPage\": \"string\",\n  \"governanceMaturity\": \"string\",\n  \"hasDevelopmentTeam\": true,\n  \"hasExistingPlatforms\": true,\n  \"id\": \"string\",\n  \"implementationTypes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"industry\": \"string\",\n  \"instagramProfile\": \"string\",\n  \"lastDashboardRefresh\": \"string\",\n  \"linkedInProfile\": \"string\",\n  \"logo\": \"string\",\n  \"name\": \"string\",\n  \"onboardingCompletedAt\": \"string\",\n  \"onboardingData\": \"string\",\n  \"phone\": \"string\",\n  \"selectedTemplateCategories\": [\n    \"string\",\n    \"string\"\n  ],\n  \"slug\": \"string\",\n  \"tikTokProfile\": \"string\",\n  \"updatedAt\": \"string\",\n  \"useIndustryTemplate\": true,\n  \"website\": \"string\",\n  \"xProfile\": \"string\",\n  \"youTubeChannel\": \"string\"\n}"
+				},
+				{
+					"name": "Bad Request",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"address\": \"string\",\n  \"billingCity\": \"string\",\n  \"billingCountry\": \"string\",\n  \"billingEmail\": \"string\",\n  \"billingLine1\": \"string\",\n  \"billingLine2\": \"string\",\n  \"billingPostalCode\": \"string\",\n  \"billingState\": \"string\",\n  \"businessOperationHours\": \"string\",\n  \"companySize\": \"string\",\n  \"complianceRequirements\": [\n    \"string\",\n    \"string\"\n  ],\n  \"country\": \"string\",\n  \"devCicdPreference\": \"string\",\n  \"devDeploymentTarget\": \"string\",\n  \"devFramework\": \"string\",\n  \"devIntegrationTargets\": [\n    \"string\",\n    \"string\"\n  ],\n  \"devLanguage\": \"string\",\n  \"devSelectedTemplate\": \"string\",\n  \"dtBudgetRange\": \"string\",\n  \"dtBusinessPriorities\": [\n    \"string\",\n    \"string\"\n  ],\n  \"dtCurrentSystems\": [\n    \"string\",\n    \"string\"\n  ],\n  \"dtImplementationApproach\": \"string\",\n  \"dtSelectedTemplates\": \"string\",\n  \"dtSkipped\": false,\n  \"email\": \"string\",\n  \"existingFrameworks\": [\n    \"string\",\n    \"string\"\n  ],\n  \"facebookPage\": \"string\",\n  \"governanceMaturity\": \"string\",\n  \"hasDevelopmentTeam\": false,\n  \"hasExistingPlatforms\": false,\n  \"implementationTypes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"industry\": \"string\",\n  \"instagramProfile\": \"string\",\n  \"linkedInProfile\": \"string\",\n  \"logo\": \"string\",\n  \"name\": \"string\",\n  \"onboardingData\": \"string\",\n  \"phone\": \"string\",\n  \"selectedTemplateCategories\": [\n    \"string\",\n    \"string\"\n  ],\n  \"slug\": \"string\",\n  \"tikTokProfile\": \"string\",\n  \"useIndustryTemplate\": false,\n  \"website\": \"string\",\n  \"xProfile\": \"string\",\n  \"youTubeChannel\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "string",
+									"description": "Organization ID"
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"details\": \"\",\n  \"error\": \"string\",\n  \"message\": \"string\"\n}"
+				},
+				{
+					"name": "Unauthorized",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"address\": \"string\",\n  \"billingCity\": \"string\",\n  \"billingCountry\": \"string\",\n  \"billingEmail\": \"string\",\n  \"billingLine1\": \"string\",\n  \"billingLine2\": \"string\",\n  \"billingPostalCode\": \"string\",\n  \"billingState\": \"string\",\n  \"businessOperationHours\": \"string\",\n  \"companySize\": \"string\",\n  \"complianceRequirements\": [\n    \"string\",\n    \"string\"\n  ],\n  \"country\": \"string\",\n  \"devCicdPreference\": \"string\",\n  \"devDeploymentTarget\": \"string\",\n  \"devFramework\": \"string\",\n  \"devIntegrationTargets\": [\n    \"string\",\n    \"string\"\n  ],\n  \"devLanguage\": \"string\",\n  \"devSelectedTemplate\": \"string\",\n  \"dtBudgetRange\": \"string\",\n  \"dtBusinessPriorities\": [\n    \"string\",\n    \"string\"\n  ],\n  \"dtCurrentSystems\": [\n    \"string\",\n    \"string\"\n  ],\n  \"dtImplementationApproach\": \"string\",\n  \"dtSelectedTemplates\": \"string\",\n  \"dtSkipped\": false,\n  \"email\": \"string\",\n  \"existingFrameworks\": [\n    \"string\",\n    \"string\"\n  ],\n  \"facebookPage\": \"string\",\n  \"governanceMaturity\": \"string\",\n  \"hasDevelopmentTeam\": false,\n  \"hasExistingPlatforms\": false,\n  \"implementationTypes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"industry\": \"string\",\n  \"instagramProfile\": \"string\",\n  \"linkedInProfile\": \"string\",\n  \"logo\": \"string\",\n  \"name\": \"string\",\n  \"onboardingData\": \"string\",\n  \"phone\": \"string\",\n  \"selectedTemplateCategories\": [\n    \"string\",\n    \"string\"\n  ],\n  \"slug\": \"string\",\n  \"tikTokProfile\": \"string\",\n  \"useIndustryTemplate\": false,\n  \"website\": \"string\",\n  \"xProfile\": \"string\",\n  \"youTubeChannel\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "string",
+									"description": "Organization ID"
+								}
+							]
+						}
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"details\": \"\",\n  \"error\": \"string\",\n  \"message\": \"string\"\n}"
+				},
+				{
+					"name": "Not Found",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"address\": \"string\",\n  \"billingCity\": \"string\",\n  \"billingCountry\": \"string\",\n  \"billingEmail\": \"string\",\n  \"billingLine1\": \"string\",\n  \"billingLine2\": \"string\",\n  \"billingPostalCode\": \"string\",\n  \"billingState\": \"string\",\n  \"businessOperationHours\": \"string\",\n  \"companySize\": \"string\",\n  \"complianceRequirements\": [\n    \"string\",\n    \"string\"\n  ],\n  \"country\": \"string\",\n  \"devCicdPreference\": \"string\",\n  \"devDeploymentTarget\": \"string\",\n  \"devFramework\": \"string\",\n  \"devIntegrationTargets\": [\n    \"string\",\n    \"string\"\n  ],\n  \"devLanguage\": \"string\",\n  \"devSelectedTemplate\": \"string\",\n  \"dtBudgetRange\": \"string\",\n  \"dtBusinessPriorities\": [\n    \"string\",\n    \"string\"\n  ],\n  \"dtCurrentSystems\": [\n    \"string\",\n    \"string\"\n  ],\n  \"dtImplementationApproach\": \"string\",\n  \"dtSelectedTemplates\": \"string\",\n  \"dtSkipped\": false,\n  \"email\": \"string\",\n  \"existingFrameworks\": [\n    \"string\",\n    \"string\"\n  ],\n  \"facebookPage\": \"string\",\n  \"governanceMaturity\": \"string\",\n  \"hasDevelopmentTeam\": false,\n  \"hasExistingPlatforms\": false,\n  \"implementationTypes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"industry\": \"string\",\n  \"instagramProfile\": \"string\",\n  \"linkedInProfile\": \"string\",\n  \"logo\": \"string\",\n  \"name\": \"string\",\n  \"onboardingData\": \"string\",\n  \"phone\": \"string\",\n  \"selectedTemplateCategories\": [\n    \"string\",\n    \"string\"\n  ],\n  \"slug\": \"string\",\n  \"tikTokProfile\": \"string\",\n  \"useIndustryTemplate\": false,\n  \"website\": \"string\",\n  \"xProfile\": \"string\",\n  \"youTubeChannel\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "string",
+									"description": "Organization ID"
+								}
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"details\": \"\",\n  \"error\": \"string\",\n  \"message\": \"string\"\n}"
+				}
+			]
+		},
+		{
+			"name": "List organizations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let res = pm.response.json();\r",
+							"pm.test(\"Status code is 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"})\r",
+							" \r",
+							"pm.test(\"Checking the response time\", () => {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"})\r",
+							"\r",
+							"\r",
+							"\r",
+							"// =======================\r",
+							"// CONFIGURATION\r",
+							"// =======================\r",
+							"const targetId = pm.collectionVariables.get(\"organization_id\");\r",
+							"const expectedName = pm.collectionVariables.get(\"company_name\");\r",
+							"const expectedEmail = pm.collectionVariables.get(\"company_email\");\r",
+							"\r",
+							"// First page URL (base URL of your endpoint)\r",
+							"let nextPage = pm.request.url.toString();\r",
+							"\r",
+							"// Flag to stop when found\r",
+							"let found = false;\r",
+							"\r",
+							"\r",
+							"// =======================\r",
+							"// FUNCTION TO PROCESS PAGE\r",
+							"// =======================\r",
+							"function processPage(response) {\r",
+							"\r",
+							"    let res = response.json();\r",
+							"\r",
+							"    if (!res.items || !Array.isArray(res.items)) {\r",
+							"        throw new Error(\"Invalid response format: missing res.items\");\r",
+							"    }\r",
+							"\r",
+							"    // Loop through the items\r",
+							"    for (let i = 0; i < res.items.length; i++) {\r",
+							"        let item = res.items[i];\r",
+							"\r",
+							"        if (item.id === targetId) {\r",
+							"            found = true;\r",
+							"\r",
+							"            // ===== RUN YOUR VALIDATIONS =====\r",
+							"            pm.test(\"Organization details match expected values\", function () {\r",
+							"                pm.expect(item.id).to.eql(targetId);\r",
+							"                pm.expect(item.name).to.eql(expectedName);\r",
+							"                pm.expect(item.email).to.eql(expectedEmail);\r",
+							"            });\r",
+							"\r",
+							"            return; // STOP SEARCHING\r",
+							"        }\r",
+							"    }\r",
+							"\r",
+							"    // If there is no \"next page\", stop here and fail\r",
+							"    if (!res.nextPage) {\r",
+							"        throw new Error(`Organization ID ${targetId} NOT FOUND after checking all pages.`);\r",
+							"    }\r",
+							"\r",
+							"    // Continue to next page\r",
+							"    fetchPage(res.nextPage);\r",
+							"}\r",
+							"\r",
+							"\r",
+							"// =======================\r",
+							"// FUNCTION TO FETCH PAGE\r",
+							"// =======================\r",
+							"function fetchPage(url) {\r",
+							"    pm.sendRequest(\r",
+							"        {\r",
+							"            url: url,\r",
+							"            method: \"GET\",\r",
+							"            header: {\r",
+							"                \"Authorization\": pm.request.getHeaders().find(h => h.key === \"Authorization\")?.value\r",
+							"            }\r",
+							"        },\r",
+							"        function (err, response) {\r",
+							"            if (err) {\r",
+							"                throw new Error(\"Failed to load next page: \" + err);\r",
+							"            }\r",
+							"            processPage(response);\r",
+							"        }\r",
+							"    );\r",
+							"}\r",
+							"\r",
+							"\r",
+							"// =======================\r",
+							"// START PAGINATION SEARCH\r",
+							"// =======================\r",
+							"processPage(pm.response);\r",
+							"\r",
+							"\r",
+							"\r",
+							"// =========================================\r",
+							"// TOKEN NEGATIVE TEST CASES DATA SET\r",
+							"// =========================================\r",
+							"\r",
+							"// Your endpoint (replace the id if needed)\r",
+							"let endpoint = \"https://platforms-staging.reqarchitect.com/api/v1/platform/organizations\";\r",
+							"\r",
+							"// Test tokens\r",
+							"let tokenTests = [\r",
+							"    {\r",
+							"        label: \"No Token Provided\",\r",
+							"        token: null,\r",
+							"        expected_status: [401, 403],\r",
+							"        expected_error: \"invalid access token\"\r",
+							"    },\r",
+							"    {\r",
+							"        label: \"Wrong / Random Token\",\r",
+							"        token: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhY2NvdW50IiwiY29tcGxldGVkT25ib2FyZGluZyI6ZmFsc2UsImNzcmYiOiI0ZGFlY2ZlYS0xZjEwLTQ3MTYtYTZjYS1hMTFkZGJmZDcyMGYiLCJlbWFpbCI6InRhcmlxNDk1MjRAbWFpbGluYXRvci5jb20iLCJleHAiOjE3NjQ2NzIzMTQsImZyZXNoIjpmYWxzZSwiaWF0IjoxNzY0NjcxNDE0LCJpc3MiOiJwbGF0Zm9ybXMtYXBpLnJlcWFyY2hpdGVjdC5jb20iLCJqdGkiOiI4NTMwYzcxMi1iOGY2LTQ2NTktYmM5NC0zMzU1NzVhMDJjNTYiLCJuYW1lIjoiVGFyaXEgT2thZm9yIiwibmJmIjoxNzY0NjcxNDE0LCJvcmdhbml6YXRpb25JZCI6IiIsInJvbGUiOiJVU0VSIiwic3ViIjoiZWE4MmE4ODEtMDUzNy00YjY3LWEzYjctNzg3Mjc3YTdmMjk2IiwidHlwZSI6ImFjY2VzcyJ9.hhxQLQbgboF1jhXwnxkCwgAeMeV5LCfEAzooO-bhgX\",\r",
+							"        expected_status: [401, 403],\r",
+							"        expected_error: \"invalid access token\"\r",
+							"    },\r",
+							"    {\r",
+							"        label: \"Expired Token (Same User)\",\r",
+							"        token: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhY2NvdW50IiwiY29tcGxldGVkT25ib2FyZGluZyI6ZmFsc2UsImNzcmYiOiI0ZGFlY2ZlYS0xZjEwLTQ3MTYtYTZjYS1hMTFkZGJmZDcyMGYiLCJlbWFpbCI6InRhcmlxNDk1MjRAbWFpbGluYXRvci5jb20iLCJleHAiOjE3NjQ2NzIzMTQsImZyZXNoIjpmYWxzZSwiaWF0IjoxNzY0NjcxNDE0LCJpc3MiOiJwbGF0Zm9ybXMtYXBpLnJlcWFyY2hpdGVjdC5jb20iLCJqdGkiOiI4NTMwYzcxMi1iOGY2LTQ2NTktYmM5NC0zMzU1NzVhMDJjNTYiLCJuYW1lIjoiVGFyaXEgT2thZm9yIiwibmJmIjoxNzY0NjcxNDE0LCJvcmdhbml6YXRpb25JZCI6IiIsInJvbGUiOiJVU0VSIiwic3ViIjoiZWE4MmE4ODEtMDUzNy00YjY3LWEzYjctNzg3Mjc3YTdmMjk2IiwidHlwZSI6ImFjY2VzcyJ9.hhxQLQbgboF1jhXwnxkCwgAeMeV5LCfEAzooO-bhgX8\",\r",
+							"        expected_status: [401, 403],\r",
+							"        expected_error: \"invalid access token\"\r",
+							"    },\r",
+							"];\r",
+							"\r",
+							"// =========================================\r",
+							"// PARAMETERIZED AUTHORIZED REQUESTS\r",
+							"// =========================================\r",
+							"tokenTests.forEach(tc => {\r",
+							"\r",
+							"    pm.sendRequest({\r",
+							"        url: endpoint,\r",
+							"        method: \"GET\",\r",
+							"        header: tc.token ? { \r",
+							"            \"Authorization\": tc.token,\r",
+							"            \"Content-Type\": \"application/json\"\r",
+							"        } : {\r",
+							"            \"Content-Type\": \"application/json\"\r",
+							"        }\r",
+							"    }, function (err, res) {\r",
+							"\r",
+							"        // 1. STATUS CODE TEST\r",
+							"        pm.test(tc.label + \" | Should return 401 or 403\", function () {\r",
+							"            pm.expect(res.code).to.be.oneOf(tc.expected_status);\r",
+							"        });\r",
+							"\r",
+							"        // 2. ERROR MESSAGE TEST\r",
+							"        pm.test(tc.label + \" | Should contain correct error message\", function () {\r",
+							"            let body = JSON.stringify(res.json() || {});\r",
+							"            pm.expect(body.toLowerCase()).to.include(tc.expected_error);\r",
+							"        });\r",
+							"\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{Base_Platform_Url}}/organizations",
+					"host": [
+						"{{Base_Platform_Url}}"
+					],
+					"path": [
+						"organizations"
+					]
+				},
+				"description": "Get a paginated list of organizations with filtering"
+			},
+			"response": [
+				{
+					"name": "OK",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/organizations?skip=9280&take=9280&search=string&orderBy=string&order=string",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "9280",
+									"description": "Number of records to skip"
+								},
+								{
+									"key": "take",
+									"value": "9280",
+									"description": "Number of records to take"
+								},
+								{
+									"key": "search",
+									"value": "string",
+									"description": "Search term"
+								},
+								{
+									"key": "orderBy",
+									"value": "string",
+									"description": "Field to order by"
+								},
+								{
+									"key": "order",
+									"value": "string",
+									"description": "Order direction (asc/desc)"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"details\": \"\",\n  \"error\": \"string\",\n  \"message\": \"string\"\n}"
+				},
+				{
+					"name": "Bad Request",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/organizations?skip=9280&take=9280&search=string&orderBy=string&order=string",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "9280",
+									"description": "Number of records to skip"
+								},
+								{
+									"key": "take",
+									"value": "9280",
+									"description": "Number of records to take"
+								},
+								{
+									"key": "search",
+									"value": "string",
+									"description": "Search term"
+								},
+								{
+									"key": "orderBy",
+									"value": "string",
+									"description": "Field to order by"
+								},
+								{
+									"key": "order",
+									"value": "string",
+									"description": "Order direction (asc/desc)"
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"details\": \"\",\n  \"error\": \"string\",\n  \"message\": \"string\"\n}"
+				},
+				{
+					"name": "Unauthorized",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/organizations?skip=9280&take=9280&search=string&orderBy=string&order=string",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "9280",
+									"description": "Number of records to skip"
+								},
+								{
+									"key": "take",
+									"value": "9280",
+									"description": "Number of records to take"
+								},
+								{
+									"key": "search",
+									"value": "string",
+									"description": "Search term"
+								},
+								{
+									"key": "orderBy",
+									"value": "string",
+									"description": "Field to order by"
+								},
+								{
+									"key": "order",
+									"value": "string",
+									"description": "Order direction (asc/desc)"
+								}
+							]
+						}
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"details\": \"\",\n  \"error\": \"string\",\n  \"message\": \"string\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Delete organization",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let res = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response body is not empty\", function () {\r",
+							"    pm.expect(res).to.not.be.empty;\r",
+							"});\r",
+							"pm.test(\"Checking response time\", () => {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000); // 2 seconds timeout\r",
+							"})\r",
+							"pm.test(\"Response message is correct\", function () {\r",
+							"    pm.expect(res.message).to.eql(\"Organization deleted successfully\");\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							"// =====================\r",
+							"// NEGATIVE TEST CASES\r",
+							"// =====================\r",
+							"\r",
+							"// =============================\r",
+							"// NEGATIVE TEST INPUTS\r",
+							"// =============================\r",
+							"let negative_inputs = [\r",
+							"    {\r",
+							"        organization_id: \" \",\r",
+							"        label: \"Organization ID is blank\",\r",
+							"        expected_error: \"Organization not found\"\r",
+							"    },\r",
+							"    {\r",
+							"        organization_id: \"one-two-three\",\r",
+							"        label: \"Organization ID is spelled-out number\",\r",
+							"        expected_error: \"Organization not found\"\r",
+							"    },\r",
+							"    {\r",
+							"        organization_id: \"ca32b11a-2c53-4fbd-b2b6-80a4868fd8fKD\",\r",
+							"        label: \"Wrong/Non-existing Organization ID\",\r",
+							"        expected_error: \"Organization not found\"\r",
+							"    },\r",
+							"    {\r",
+							"        organization_id: \"ca32b11a-2c53-4fbd-b2b6-80a4868fd8fb\",\r",
+							"        label: \"Deleted Organization ID\",\r",
+							"        expected_error: \"Organization not found\"\r",
+							"    }\r",
+							"];\r",
+							"\r",
+							"\r",
+							"// =============================\r",
+							"// ACCESS TOKEN (IMPORTANT)\r",
+							"// =============================\r",
+							"let token = pm.collectionVariables.get(\"access_token\");\r",
+							"\r",
+							"\r",
+							"// =============================\r",
+							"// LOOP THROUGH TEST CASES\r",
+							"// =============================\r",
+							"negative_inputs.forEach(tc => {\r",
+							"\r",
+							"    let url = `https://platforms-staging.reqarchitect.com/api/v1/platform/organizations/${tc.organization_id}`;\r",
+							"\r",
+							"    pm.sendRequest({\r",
+							"        url: url,\r",
+							"        method: \"GET\",\r",
+							"        header: {\r",
+							"            \"Authorization\": `Bearer ${token}`,\r",
+							"            \"Content-Type\": \"application/json\"\r",
+							"        }\r",
+							"    }, function (err, res) {\r",
+							"\r",
+							"        pm.test(tc.label + \" | Status code should be 4xx\", function () {\r",
+							"            pm.expect(res.code).to.be.oneOf([400, 404, 422]);\r",
+							"        });\r",
+							"\r",
+							"        pm.test(tc.label + \" | Error message should match expectation\", function () {\r",
+							"            let json = res.json();\r",
+							"            pm.expect(JSON.stringify(json)).to.include(tc.expected_error);\r",
+							"        });\r",
+							"\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"// =========================================\r",
+							"// TOKEN NEGATIVE TEST CASES\r",
+							"// =========================================\r",
+							"\r",
+							"// Your endpoint (replace the id if needed)\r",
+							"let endpoint = \"https://platforms-staging.reqarchitect.com/api/v1/platform/organizations/\"+ pm.collectionVariables.get(\"organization_id\");\r",
+							"\r",
+							"// Test tokens\r",
+							"let tokenTests = [\r",
+							"    {\r",
+							"        label: \"No Token Provided\",\r",
+							"        token: null,\r",
+							"        expected_status: [401, 403],\r",
+							"        expected_error: \"invalid access token\"\r",
+							"    },\r",
+							"    {\r",
+							"        label: \"Wrong / Random Token\",\r",
+							"        token: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhY2NvdW50IiwiY29tcGxldGVkT25ib2FyZGluZyI6ZmFsc2UsImNzcmYiOiI0ZGFlY2ZlYS0xZjEwLTQ3MTYtYTZjYS1hMTFkZGJmZDcyMGYiLCJlbWFpbCI6InRhcmlxNDk1MjRAbWFpbGluYXRvci5jb20iLCJleHAiOjE3NjQ2NzIzMTQsImZyZXNoIjpmYWxzZSwiaWF0IjoxNzY0NjcxNDE0LCJpc3MiOiJwbGF0Zm9ybXMtYXBpLnJlcWFyY2hpdGVjdC5jb20iLCJqdGkiOiI4NTMwYzcxMi1iOGY2LTQ2NTktYmM5NC0zMzU1NzVhMDJjNTYiLCJuYW1lIjoiVGFyaXEgT2thZm9yIiwibmJmIjoxNzY0NjcxNDE0LCJvcmdhbml6YXRpb25JZCI6IiIsInJvbGUiOiJVU0VSIiwic3ViIjoiZWE4MmE4ODEtMDUzNy00YjY3LWEzYjctNzg3Mjc3YTdmMjk2IiwidHlwZSI6ImFjY2VzcyJ9.hhxQLQbgboF1jhXwnxkCwgAeMeV5LCfEAzooO-bhgX\",\r",
+							"        expected_status: [401, 403],\r",
+							"        expected_error: \"invalid access token\"\r",
+							"    },\r",
+							"    {\r",
+							"        label: \"Expired Token (Same User)\",\r",
+							"        token: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhY2NvdW50IiwiY29tcGxldGVkT25ib2FyZGluZyI6ZmFsc2UsImNzcmYiOiI0ZGFlY2ZlYS0xZjEwLTQ3MTYtYTZjYS1hMTFkZGJmZDcyMGYiLCJlbWFpbCI6InRhcmlxNDk1MjRAbWFpbGluYXRvci5jb20iLCJleHAiOjE3NjQ2NzIzMTQsImZyZXNoIjpmYWxzZSwiaWF0IjoxNzY0NjcxNDE0LCJpc3MiOiJwbGF0Zm9ybXMtYXBpLnJlcWFyY2hpdGVjdC5jb20iLCJqdGkiOiI4NTMwYzcxMi1iOGY2LTQ2NTktYmM5NC0zMzU1NzVhMDJjNTYiLCJuYW1lIjoiVGFyaXEgT2thZm9yIiwibmJmIjoxNzY0NjcxNDE0LCJvcmdhbml6YXRpb25JZCI6IiIsInJvbGUiOiJVU0VSIiwic3ViIjoiZWE4MmE4ODEtMDUzNy00YjY3LWEzYjctNzg3Mjc3YTdmMjk2IiwidHlwZSI6ImFjY2VzcyJ9.hhxQLQbgboF1jhXwnxkCwgAeMeV5LCfEAzooO-bhgX8\",\r",
+							"        expected_status: [401, 403],\r",
+							"        expected_error: \"invalid access token\"\r",
+							"    },\r",
+							"];\r",
+							"\r",
+							"// =========================================\r",
+							"// PARAMETERIZED REQUESTS\r",
+							"// =========================================\r",
+							"tokenTests.forEach(tc => {\r",
+							"\r",
+							"    pm.sendRequest({\r",
+							"        url: endpoint,\r",
+							"        method: \"GET\",\r",
+							"        header: tc.token ? { \r",
+							"            \"Authorization\": tc.token,\r",
+							"            \"Content-Type\": \"application/json\"\r",
+							"        } : {\r",
+							"            \"Content-Type\": \"application/json\"\r",
+							"        }\r",
+							"    }, function (err, res) {\r",
+							"\r",
+							"        // 1. STATUS CODE TEST\r",
+							"        pm.test(tc.label + \" | Should return 401 or 403\", function () {\r",
+							"            pm.expect(res.code).to.be.oneOf(tc.expected_status);\r",
+							"        });\r",
+							"\r",
+							"        // 2. ERROR MESSAGE TEST\r",
+							"        pm.test(tc.label + \" | Should contain correct error message\", function () {\r",
+							"            let body = JSON.stringify(res.json() || {});\r",
+							"            pm.expect(body.toLowerCase()).to.include(tc.expected_error);\r",
+							"        });\r",
+							"\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{Base_Platform_Url}}/organizations/:id",
+					"host": [
+						"{{Base_Platform_Url}}"
+					],
+					"path": [
+						"organizations",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "{{organization_id}}",
+							"description": "Organization ID"
+						}
+					]
+				},
+				"description": "Delete an organization by their ID"
+			},
+			"response": [
+				{
+					"name": "OK",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "string",
+									"description": "Organization ID"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"message\": \"string\"\n}"
+				},
+				{
+					"name": "Bad Request",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "string",
+									"description": "Organization ID"
+								}
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"details\": \"\",\n  \"error\": \"string\",\n  \"message\": \"string\"\n}"
+				},
+				{
+					"name": "Unauthorized",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "string",
+									"description": "Organization ID"
+								}
+							]
+						}
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"details\": \"\",\n  \"error\": \"string\",\n  \"message\": \"string\"\n}"
+				},
+				{
+					"name": "Not Found",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "<API Key>",
+								"description": "Added as a part of security scheme: apikey"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "string",
+									"description": "Organization ID"
+								}
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"details\": \"\",\n  \"error\": \"string\",\n  \"message\": \"string\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Logout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let res = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response body is not empty\", function () {\r",
+							"    pm.expect(res).to.not.be.empty;\r",
+							"});\r",
+							"pm.test(\"Checking response time\", () => {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000); // 2 seconds timeout\r",
+							"\r",
+							"// ========== UNSET ALL COLLECTION VARIABLES ==========\r",
+							"\r",
+							"pm.collectionVariables.unset(\"company_name\");\r",
+							"pm.collectionVariables.unset(\"company_website\");\r",
+							"pm.collectionVariables.unset(\"company_email\");\r",
+							"pm.collectionVariables.unset(\"company_phone\");\r",
+							"pm.collectionVariables.unset(\"company_linkedin\");\r",
+							"\r",
+							"pm.collectionVariables.unset(\"company_country\");\r",
+							"pm.collectionVariables.unset(\"company_city\");\r",
+							"pm.collectionVariables.unset(\"company_address\");\r",
+							"\r",
+							"pm.collectionVariables.unset(\"billing_country\");\r",
+							"pm.collectionVariables.unset(\"billing_city\");\r",
+							"pm.collectionVariables.unset(\"billing_line1\");\r",
+							"pm.collectionVariables.unset(\"billing_line2\");\r",
+							"pm.collectionVariables.unset(\"billing_state\");\r",
+							"pm.collectionVariables.unset(\"billing_postal_code\");\r",
+							"\r",
+							"pm.collectionVariables.unset(\"company_industry\");\r",
+							"\r",
+							"pm.collectionVariables.unset(\"facebook_page\");\r",
+							"pm.collectionVariables.unset(\"instagram_profile\");\r",
+							"pm.collectionVariables.unset(\"linkedin_profile\");\r",
+							"pm.collectionVariables.unset(\"tiktok_profile\");\r",
+							"pm.collectionVariables.unset(\"youtube_channel\");\r",
+							"pm.collectionVariables.unset(\"x_profile\");\r",
+							"\r",
+							"pm.collectionVariables.unset(\"company_technologies\");\r",
+							"pm.collectionVariables.unset(\"company_framework\");\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{Base_Platform_Url}}/auth/logout",
+					"host": [
+						"{{Base_Platform_Url}}"
+					],
+					"path": [
+						"auth",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "user_id",
+			"value": ""
+		},
+		{
+			"key": "access_token",
+			"value": ""
+		},
+		{
+			"key": "refresh_token",
+			"value": ""
+		},
+		{
+			"key": "user_name",
+			"value": ""
+		},
+		{
+			"key": "user_phone",
+			"value": ""
+		},
+		{
+			"key": "organization_id",
+			"value": ""
+		},
+		{
+			"key": "company_name",
+			"value": ""
+		},
+		{
+			"key": "company_website",
+			"value": ""
+		},
+		{
+			"key": "company_email",
+			"value": ""
+		},
+		{
+			"key": "company_phone",
+			"value": ""
+		},
+		{
+			"key": "company_linkedin",
+			"value": ""
+		},
+		{
+			"key": "company_country",
+			"value": ""
+		},
+		{
+			"key": "company_city",
+			"value": ""
+		},
+		{
+			"key": "company_address",
+			"value": ""
+		},
+		{
+			"key": "billing_country",
+			"value": ""
+		},
+		{
+			"key": "billing_city",
+			"value": ""
+		},
+		{
+			"key": "billing_line1",
+			"value": ""
+		},
+		{
+			"key": "billing_line2",
+			"value": ""
+		},
+		{
+			"key": "billing_state",
+			"value": ""
+		},
+		{
+			"key": "billing_postal_code",
+			"value": ""
+		},
+		{
+			"key": "company_industry",
+			"value": ""
+		},
+		{
+			"key": "facebook_page",
+			"value": ""
+		},
+		{
+			"key": "instagram_profile",
+			"value": ""
+		},
+		{
+			"key": "linkedin_profile",
+			"value": ""
+		},
+		{
+			"key": "tiktok_profile",
+			"value": ""
+		},
+		{
+			"key": "youtube_channel",
+			"value": ""
+		},
+		{
+			"key": "x_profile",
+			"value": ""
+		},
+		{
+			"key": "company_technologies",
+			"value": ""
+		},
+		{
+			"key": "company_framework",
+			"value": ""
+		}
+	]
+}
